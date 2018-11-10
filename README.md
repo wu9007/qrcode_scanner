@@ -1,6 +1,9 @@
 # qrcode_scan
 
-二维码扫描插件
+基于ZXing的二维码扫描插件
+
+library：https://github.com/yipianfengye/android-zxingLibrary
+
 ![Screenshot_20181110-160005.jpg](https://upload-images.jianshu.io/upload_images/3646846-c30da8ba73215907.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
 #### 权限：
