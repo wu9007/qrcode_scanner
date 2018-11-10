@@ -35,7 +35,7 @@ dependencies {
 编辑 pubspec.yaml 文件
 ```
 dependencies:
- flutter_remote_package:
+ qrcode_scan:
   git:
    url: git@github.com:leyan95/qrcode_scanner.git
    ref: 0.0.1

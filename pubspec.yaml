@@ -1,8 +1,8 @@
 name: qrcode_scan
-description: A new Flutter project.
+description: A flutter plugin for scanning QRCodes.
 version: 0.0.1
-author:
-homepage:
+author: Shusheng<https://leyan95.github.io>
+homepage: https://github.com/leyan95/qrcode_scanner
 
 environment:
   sdk: ">=2.0.0-dev.68.0 <3.0.0"
