@@ -1,4 +1,4 @@
-package com.leyan.qrcodescan
+package com.shinow.qrscan
 
 import android.app.Activity
 import android.content.Intent
@@ -14,15 +14,15 @@ import com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_SUCCESS
 import com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE
 import com.uuzuche.lib_zxing.activity.ZXingLibrary
 
-class QrcodeScanPlugin(val activity: Activity) : MethodCallHandler,
+class QrscanPlugin(val activity: Activity) : MethodCallHandler,
         PluginRegistry.ActivityResultListener {
   private var result: Result? = null
 
   companion object {
     @JvmStatic
     fun registerWith(registrar: Registrar): Unit {
-      val channel = MethodChannel(registrar.messenger(), "com.leyan.qrcode_scan")
-      val plugin = QrcodeScanPlugin(registrar.activity())
+      val channel = MethodChannel(registrar.messenger(), "qr_scan")
+      val plugin = QrscanPlugin(registrar.activity())
       channel.setMethodCallHandler(plugin)
       registrar.addActivityResultListener(plugin)
 
@@ -65,4 +65,3 @@ class QrcodeScanPlugin(val activity: Activity) : MethodCallHandler,
     return false
   }
 }
-

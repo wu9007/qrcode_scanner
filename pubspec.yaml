@@ -1,14 +1,18 @@
-name: qrcode_scan
-description: A flutter plugin for scanning QRCodes.
+name: qrscan
+description: A new Flutter project.
 version: 0.0.1
 author: Shusheng<https://leyan95.github.io>
 homepage: https://github.com/leyan95/qrcode_scanner
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
   flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
     sdk: flutter
 
 # For information on the generic Dart part of this file, see the
@@ -16,9 +20,13 @@ dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+  # This section identifies this Flutter project as a plugin project.
+  # The androidPackage and pluginClass identifiers should not ordinarily
+  # be modified. They are used by the tooling to maintain consistency when
+  # adding or updating assets for this project.
   plugin:
-    androidPackage: com.leyan.qrcodescan
-    pluginClass: QrcodeScanPlugin
+    androidPackage: com.shinow.qrscan
+    pluginClass: QrscanPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

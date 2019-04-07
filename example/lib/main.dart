@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:qrcode_scan/qrcode_scan.dart';
+import 'package:qrscan/qrscan.dart';
 
 void main() {
   runApp(MyApp());
@@ -48,10 +48,10 @@ class _MyAppState extends State<MyApp> {
 
   Future scan() async {
     try {
-      String barcode = await QrcodeScan.scan();
+      String barcode = await Qrscan.scan();
       setState(() => this.barcode = barcode);
     } on PlatformException catch (e) {
-      if (e.code == QrcodeScan.CameraAccessDenied) {
+      if (e.code == Qrscan.CameraAccessDenied) {
         setState(() {
           this.barcode = 'The user did not grant the camera permission!';
         });

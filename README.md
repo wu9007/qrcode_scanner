@@ -14,10 +14,8 @@ library：https://github.com/yipianfengye/android-zxingLibrary
 编辑app目录下的build.gradle:
 ```groovy
 buildscript {
-    ext.kotlin_version = '1.2.31'
-    ...
+    ext.kotlin_version = '1.3.21'
     dependencies {
-        ...
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -25,24 +23,19 @@ buildscript {
 编辑项目目录下的build.gradle:
 ```groovy
 apply plugin: 'kotlin-android'
-...
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
-    ...
 }
 ```
 
 编辑 pubspec.yaml 文件
 ```
 dependencies:
- qrcode_scan:
-  git:
-   url: git@github.com:leyan95/qrcode_scanner.git
-   ref: 0.0.1
+ qrscan: ^0.0.1
 ```
 
 #### 使用方式
 ```dart
-String barcode = await QrcodeScan.scan();
+String barcode = await Qrscan.scan();
 ```
 

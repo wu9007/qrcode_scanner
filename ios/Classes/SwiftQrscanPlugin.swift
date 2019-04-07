@@ -1,10 +1,10 @@
 import Flutter
 import UIKit
 
-public class SwiftQrcodeScanPlugin: NSObject, FlutterPlugin {
+public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let channel = FlutterMethodChannel(name: "qrcode_scan", binaryMessenger: registrar.messenger())
-    let instance = SwiftQrcodeScanPlugin()
+    let channel = FlutterMethodChannel(name: "qrscan", binaryMessenger: registrar.messenger())
+    let instance = SwiftQrscanPlugin()
     registrar.addMethodCallDelegate(instance, channel: channel)
   }
 
