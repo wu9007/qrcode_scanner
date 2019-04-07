@@ -34,7 +34,7 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 
 ## About
 
-Created by Wu.Jianchuan.
+Created by Shusheng.
 
 [license-image]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: LICENSE
