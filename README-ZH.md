@@ -4,7 +4,6 @@
   
 [![License][license-image]][license-url] 
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
-[![support](https://img.shields.io/badge/platform-flutter%7Cdart%20vm-ff69b4.svg?style=flat-square)](https://github.com/flutterchina/qrscan)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 base on ZXing [github](https://github.com/yipianfengye/android-zxingLibrary)
