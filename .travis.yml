@@ -1,0 +1,11 @@
+language: dart
+dart:
+# Install the latest stable release
+- stable
+dart_task:
+- dartanalyzer: true
+- test: --platform vm
+
+script:
+- pub run test_coverage
+- bash <(curl -s https://codecov.io/bash)

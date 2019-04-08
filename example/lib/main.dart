@@ -4,6 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qrscan/qrscan.dart';
 
+/*
+    Author: Shusheng
+    Email: leyansorosame@gmail.com
+    createTime:2019-04-07 21:39
+ */
 void main() {
   runApp(MyApp());
 }
@@ -59,7 +64,8 @@ class _MyAppState extends State<MyApp> {
         setState(() => this.barcode = 'Unknown error: $e');
       }
     } on FormatException {
-      setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+      setState(() => this.barcode =
+          'null (User returned using the "back"-button before scanning anything. Result)');
     } catch (e) {
       setState(() => this.barcode = 'Unknown error: $e');
     }

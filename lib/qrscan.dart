@@ -10,8 +10,10 @@ import 'package:flutter/services.dart';
 class Qrscan {
   // camera access denied const.
   static const CameraAccessDenied = 'PERMISSION_NOT_GRANTED';
+
   // method channel.
   static const MethodChannel _channel = const MethodChannel('qr_scan');
+
   // method invoke.
   static Future<String> scan() async => await _channel.invokeMethod('scan');
 }
