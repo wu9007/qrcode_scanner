@@ -24,7 +24,9 @@ dependencies:
 
 ## Usage example
 ```dart
-String barcode = await Qrscan.scan();
+import 'package:qrscan/qrscan.dart' as scanner;
+
+String barcode = await scanner.scan();
 ```
 
 ## Contribute

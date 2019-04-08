@@ -1,8 +1,9 @@
 # qrscan_example
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:qrscan/qrscan.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
 
 void main() {
   runApp(MyApp());
@@ -48,10 +49,10 @@ class _MyAppState extends State<MyApp> {
 
   Future scan() async {
     try {
-      String barcode = await Qrscan.scan();
+      String barcode = await scanner.scan();
       setState(() => this.barcode = barcode);
     } on PlatformException catch (e) {
-      if (e.code == Qrscan.CameraAccessDenied) {
+      if (e.code == scanner.CameraAccessDenied) {
         setState(() {
           this.barcode = 'The user did not grant the camera permission!';
         });
@@ -59,10 +60,12 @@ class _MyAppState extends State<MyApp> {
         setState(() => this.barcode = 'Unknown error: $e');
       }
     } on FormatException {
-      setState(() => this.barcode = 'null (User returned using the "back"-button before scanning anything. Result)');
+      setState(() => this.barcode =
+          'null (User returned using the "back"-button before scanning anything. Result)');
     } catch (e) {
       setState(() => this.barcode = 'Unknown error: $e');
     }
   }
 }
+
 ```
