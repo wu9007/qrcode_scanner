@@ -8,6 +8,8 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 base on ZXing [github](https://github.com/yipianfengye/android-zxingLibrary)
 
+![qrscan.gif](https://upload-images.jianshu.io/upload_images/3646846-3635043fb6869c2b.gif?imageMogr2/auto-orient/strip)
+
 #### permission：
 - `<uses-permission android:name="android.permission.INTERNET"/>`
 - `<uses-permission android:name="android.permission.CAMERA" />`
