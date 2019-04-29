@@ -6,7 +6,7 @@
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
-base on ZXing [github](https://github.com/yipianfengye/android-zxingLibrary)
+base on ZXing [github](https://github.com/leyan95/qrcode_scanner)
 
 #### 权限：
 - `<uses-permission android:name="android.permission.INTERNET"/>`
@@ -19,7 +19,7 @@ Add this to your package's pubspec.yaml file:
 
 ```
 dependencies:
- qrscan: ^0.1.0
+ qrscan: ^0.1.5
 ```
 
 ## 使用方式

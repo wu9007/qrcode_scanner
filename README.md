@@ -6,7 +6,8 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
-base on ZXing [github](https://github.com/yipianfengye/android-zxingLibrary)
+
+[github](https://github.com/leyan95/qrcode_scanner)
 
 ![qrscan.gif](https://upload-images.jianshu.io/upload_images/3646846-b94b988311342c74.gif?imageMogr2/auto-orient/strip%7CimageView2/2/w/320/format/webp)
 
@@ -21,7 +22,7 @@ Add this to your package's pubspec.yaml file:
 
 ```
 dependencies:
- qrscan: ^0.1.0
+ qrscan: ^0.1.5
 ```
 
 ## Usage example
