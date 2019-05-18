@@ -4,6 +4,7 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
   
 [![License][license-image]][license-url] 
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2564729935f441b4987fd4f49ac988d8)](https://www.codacy.com/app/leyan95/qrcode_scanner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=leyan95/qrcode_scanner&amp;utm_campaign=Badge_Grade)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
