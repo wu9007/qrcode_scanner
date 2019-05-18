@@ -4,22 +4,22 @@
   
 [![License][license-image]][license-url] 
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2564729935f441b4987fd4f49ac988d8)](https://www.codacy.com/app/leyan95/qrcode_scanner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=leyan95/qrcode_scanner&amp;utm_campaign=Badge_Grade)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 base on ZXing [github](https://github.com/leyan95/qrcode_scanner)
 
 #### 权限：
-- `<uses-permission android:name="android.permission.INTERNET"/>`
-- `<uses-permission android:name="android.permission.CAMERA" />`
-- `<uses-permission android:name="android.permission.VIBRATE"/>`
+`<uses-permission android:name="android.permission.CAMERA" />`
+`<uses-permission android:name="android.permission.VIBRATE"/>`
 
 ## 安装
 
 Add this to your package's pubspec.yaml file:
 
-```
+```yaml
 dependencies:
- qrscan: ^0.1.5
+ qrscan: ^0.1.6
 ```
 
 ## 使用方式

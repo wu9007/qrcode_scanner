@@ -12,17 +12,16 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 ![qrscan.gif](https://upload-images.jianshu.io/upload_images/3646846-b94b988311342c74.gif?imageMogr2/auto-orient/strip%7CimageView2/2/w/320/format/webp)
 
 #### permission：
-- `<uses-permission android:name="android.permission.INTERNET"/>`
-- `<uses-permission android:name="android.permission.CAMERA" />`
-- `<uses-permission android:name="android.permission.VIBRATE"/>`
+`<uses-permission android:name="android.permission.CAMERA" />`
+`<uses-permission android:name="android.permission.VIBRATE"/>`
 
 ## Installation
 
 Add this to your package's pubspec.yaml file:
 
-```
+```yaml
 dependencies:
- qrscan: ^0.1.5
+ qrscan: ^0.1.6
 ```
 
 ## Usage example
