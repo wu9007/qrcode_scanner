@@ -12,21 +12,19 @@ import com.uuzuche.lib_zxing.activity.CodeUtils;
 
 public class SecondActivity extends AppCompatActivity {
 
-    private CaptureFragment captureFragment;
+    public static boolean isOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_second);
-        captureFragment = new CaptureFragment();
+        CaptureFragment captureFragment = new CaptureFragment();
         CodeUtils.setFragmentArgs(captureFragment, R.layout.my_camera);
         captureFragment.setAnalyzeCallback(analyzeCallback);
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_my_container, captureFragment).commit();
 
         initView();
     }
-
-    public static boolean isOpen = false;
 
     private void initView() {
         LinearLayout lightLayout = (LinearLayout) findViewById(R.id.scan_light);
@@ -52,7 +50,7 @@ public class SecondActivity extends AppCompatActivity {
         });
     }
 
-    CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {
+    private CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {
         @Override
         public void onAnalyzeSuccess(Bitmap mBitmap, String result) {
             Intent resultIntent = new Intent();

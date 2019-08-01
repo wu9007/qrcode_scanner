@@ -20,11 +20,14 @@
  2019/05/18
 ## 0.1.7 
  2019/08/01
- - light upd
- - back view
+- light upd
+- back view
 ## 0.1.8
  2019/08/01
- - update style
+- update style
 ## 0.1.9
  2019/08/01
- - update style
+- update style
+## 0.2.0
+ 2019/08/01
+- update style
