@@ -14,8 +14,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="15dp"
-        android:paddingTop="15dp"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
         android:layout_gravity="bottom|center_horizontal"
         android:orientation="horizontal"
         android:background="#AA333333"
@@ -35,14 +35,6 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/ic_light"
                 />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="闪光灯"
-                android:layout_marginTop="10dp"
-                android:textColor="#FFFFFF"
-                />
         </LinearLayout>
 
         <LinearLayout
@@ -58,14 +50,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/ic_back"
-                />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="返回"
-                android:layout_marginTop="10dp"
-                android:textColor="#FFFFFF"
                 />
         </LinearLayout>
 
