@@ -4,5 +4,6 @@
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
 
-    <color name="scan_corner_color">#0effc2</color>
+    <color name="scan_corner_color_green">#0effc2</color>
+    <color name="scan_corner_color_blue">#12C4FF</color>
 </resources>
