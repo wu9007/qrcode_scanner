@@ -40,7 +40,7 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
   }
 
   private fun showBarcodeView() {
-    val intent = Intent(activity, CaptureActivity::class.java)
+    val intent = Intent(activity, SecondActivity::class.java)
     activity.startActivityForResult(intent, 100)
   }
 
