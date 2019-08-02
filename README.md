@@ -46,3 +46,10 @@ Created by Shusheng.
 
 [license-image]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: LICENSE
+
+
+## todo
+- Apply for camera privileges
+- Adjust the layout
+- Display the switch button of the flashlight according to the light intensity
+- Support IOS
