@@ -9,7 +9,7 @@
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 base on ZXing [github](https://github.com/leyan95/qrcode_scanner)
 
-#### 权限：
+## 权限：
 `<uses-permission android:name="android.permission.CAMERA" />`
 `<uses-permission android:name="android.permission.VIBRATE"/>`
 

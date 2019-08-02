@@ -12,7 +12,7 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
 ![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan.gif)
 
-#### permission：
+## permission：
 `<uses-permission android:name="android.permission.CAMERA" />`
 `<uses-permission android:name="android.permission.VIBRATE"/>`
 
