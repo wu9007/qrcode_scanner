@@ -47,7 +47,11 @@ Created by Shusheng.
 [license-url]: LICENSE
 
 
-## todo
-- Apply for camera privileges
+## Features
+- [x] Scan BR-CODE
+- [x] Scan QR-CODE
+- [x] Control the flash while scanning
+- [x] Apply for camera privileges
+- Scanning BR-CODE and QR-CODE in albums
 - Display the switch button of the flashlight according to the light intensity
 - Support IOS
