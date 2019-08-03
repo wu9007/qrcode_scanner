@@ -31,6 +31,15 @@ import 'package:qrscan/qrscan.dart' as scanner;
 String barcode = await scanner.scan();
 ```
 
+## Features
+- [x] Scan BR-CODE
+- [x] Scan QR-CODE
+- [x] Control the flash while scanning
+- [x] Apply for camera privileges
+- [ ] Scanning BR-CODE and QR-CODE in albums
+- [ ] Display the switch button of the flashlight according to the light intensity
+- [ ] Support IOS
+
 ## Contribute
 
 We would ❤️ to see your contribution!
@@ -45,13 +54,3 @@ Created by Shusheng.
 
 [license-image]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: LICENSE
-
-
-## Features
-- [x] Scan BR-CODE
-- [x] Scan QR-CODE
-- [x] Control the flash while scanning
-- [x] Apply for camera privileges
-- Scanning BR-CODE and QR-CODE in albums
-- Display the switch button of the flashlight according to the light intensity
-- Support IOS
