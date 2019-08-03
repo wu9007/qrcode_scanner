@@ -12,3 +12,4 @@
 ## 0.1.8 - (2019/08/01)  update style
 ## 0.1.9 - (2019/08/01)  update style
 ## 0.2.0 - (2019/08/01)  update style
+## 0.2.1 - (2019/08/03)  Adjust the layout

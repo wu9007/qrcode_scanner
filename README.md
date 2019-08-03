@@ -22,7 +22,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.0
+ qrscan: ^0.2.1
 ```
 
 ## Usage example
@@ -50,6 +50,5 @@ Created by Shusheng.
 
 ## todo
 - Apply for camera privileges
-- Adjust the layout
 - Display the switch button of the flashlight according to the light intensity
 - Support IOS
