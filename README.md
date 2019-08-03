@@ -14,7 +14,6 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
 ## permission：
 `<uses-permission android:name="android.permission.CAMERA" />`
-`<uses-permission android:name="android.permission.VIBRATE"/>`
 
 ## Installation
 
