@@ -79,19 +79,22 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
                 }
             } else {
                 val errorCode = intent?.getStringExtra("ERROR_CODE")
-                this.result?.error(errorCode, null, null)
+                if (errorCode != null) {
+                    this.result?.error(errorCode, null, null)
+                }
             }
             return true
         } else if (code == REQUEST_IMAGE) {
             if (intent != null) {
                 val uri = intent.getData()
                 try {
-                    var analyzeCallback: CodeUtils.AnalyzeCallback? = CustomAnalyzeCallback (this.result, intent);
+                    var analyzeCallback: CodeUtils.AnalyzeCallback? = CustomAnalyzeCallback(this.result, intent);
                     CodeUtils.analyzeBitmap(ImageUtil.getImageAbsolutePath(activity, uri), analyzeCallback)
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             }
+            return true
         }
         return false
     }
