@@ -2,6 +2,8 @@ package com.shinow.qrscan
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
+import android.widget.Toast
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
@@ -13,12 +15,16 @@ import com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_SUCCESS
 import com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE
 import com.uuzuche.lib_zxing.activity.ZXingLibrary
 
+import  com.shinow.qrscan.ImageUtil
+
 /**
  * @author shusheng 2018/9/30
  */
 class QrscanPlugin(val activity: Activity) : MethodCallHandler,
         PluginRegistry.ActivityResultListener {
     private var result: Result? = null
+    val REQUEST_CODE = 100
+    val REQUEST_IMAGE = 101
 
     companion object {
         /**
@@ -39,6 +45,9 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
         if (call.method == "scan") {
             this.result = result
             showBarcodeView()
+        } else if (call.method == "scan_photo") {
+            this.result = result
+            choosePhotos()
         } else {
             result.notImplemented()
         }
@@ -46,13 +55,20 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
 
     private fun showBarcodeView() {
         val intent = Intent(activity, SecondActivity::class.java)
-        activity.startActivityForResult(intent, 100)
+        activity.startActivityForResult(intent, REQUEST_CODE)
     }
 
-    override fun onActivityResult(code: Int, resultCode: Int, data: Intent?): Boolean {
-        if (code == 100) {
-            if (resultCode == Activity.RESULT_OK && data != null) {
-                val bundle = data.extras
+    private fun choosePhotos() {
+        val intent = Intent()
+        intent.setAction(Intent.ACTION_PICK)
+        intent.setType("image/*")
+        activity.startActivityForResult(intent, REQUEST_IMAGE)
+    }
+
+    override fun onActivityResult(code: Int, resultCode: Int, intent: Intent?): Boolean {
+        if (code == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK && intent != null) {
+                val bundle = intent.extras
                 if (bundle != null) {
                     if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
                         val barcode = bundle.getString(CodeUtils.RESULT_STRING)
@@ -62,10 +78,20 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
                     }
                 }
             } else {
-                val errorCode = data?.getStringExtra("ERROR_CODE")
+                val errorCode = intent?.getStringExtra("ERROR_CODE")
                 this.result?.error(errorCode, null, null)
             }
             return true
+        } else if (code == REQUEST_IMAGE) {
+            if (intent != null) {
+                val uri = intent.getData()
+                try {
+                    var analyzeCallback: CodeUtils.AnalyzeCallback? = CustomAnalyzeCallback (this.result, intent);
+                    CodeUtils.analyzeBitmap(ImageUtil.getImageAbsolutePath(activity, uri), analyzeCallback)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
         return false
     }

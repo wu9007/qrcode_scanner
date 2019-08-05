@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 void main() {
@@ -14,7 +13,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String barcode = "";
+  String barcode = '';
 
   @override
   initState() {
@@ -31,14 +30,11 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Text(barcode),
-              MaterialButton(
-                onPressed: scan,
-                child: Text("Scan"),
-                color: Colors.blue,
-                textColor: Colors.white,
-              ),
+              Text('RESULT  $barcode'),
+              RaisedButton(onPressed: _scan, child: Text("Scan")),
+              RaisedButton(onPressed: _scanPhoto, child: Text("Scan Photo")),
             ],
           ),
         ),
@@ -46,23 +42,13 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future scan() async {
-    try {
-      String barcode = await scanner.scan();
-      setState(() => this.barcode = barcode);
-    } on PlatformException catch (e) {
-      if (e.code == scanner.CameraAccessDenied) {
-        setState(() {
-          this.barcode = 'The user did not grant the camera permission!';
-        });
-      } else {
-        setState(() => this.barcode = 'Unknown error: $e');
-      }
-    } on FormatException {
-      setState(() => this.barcode =
-          'null (User returned using the "back"-button before scanning anything. Result)');
-    } catch (e) {
-      setState(() => this.barcode = 'Unknown error: $e');
-    }
+  Future _scan() async {
+    String barcode = await scanner.scan();
+    setState(() => this.barcode = barcode);
+  }
+
+  Future _scanPhoto() async {
+    String barcode = await scanner.scanPhoto();
+    setState(() => this.barcode = barcode);
   }
 }
