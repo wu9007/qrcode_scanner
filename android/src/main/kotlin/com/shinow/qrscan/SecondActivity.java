@@ -3,16 +3,20 @@ package com.shinow.qrscan;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 
+import java.util.List;
+
 import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
+import com.shinow.qrscan.CheckPermissionUtils;
 
 public class SecondActivity extends AppCompatActivity {
 
-    public static boolean isOpen = false;
+    private static boolean isOpen = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +28,14 @@ public class SecondActivity extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_my_container, captureFragment).commit();
 
         initView();
+        initPermission();
+    }
+
+    private void initPermission() {
+        String[] permissions = CheckPermissionUtils.checkPermission(this);
+        if (permissions.length != 0) {
+            ActivityCompat.requestPermissions(this, permissions, 100);
+        }
     }
 
     private void initView() {

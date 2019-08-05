@@ -1,6 +1,6 @@
 name: qrscan
 description: A Plug-in for dart, which help you scanning Bar Codes and QR Code with Android.
-version: 0.2.1
+version: 0.2.2
 author: Shusheng <leyansorosame@gmail.com>
 homepage: https://github.com/leyan95/qrcode_scanner
 

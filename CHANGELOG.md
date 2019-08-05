@@ -13,3 +13,4 @@
 ## 0.1.9 - (2019/08/01)  update style
 ## 0.2.0 - (2019/08/01)  update style
 ## 0.2.1 - (2019/08/03)  Adjust the layout
+## 0.2.2 - (2019/08/05)  Apply for camera privileges

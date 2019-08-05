@@ -2,7 +2,6 @@ package com.shinow.qrscan
 
 import android.app.Activity
 import android.content.Intent
-import com.uuzuche.lib_zxing.activity.CaptureActivity
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
