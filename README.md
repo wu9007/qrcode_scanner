@@ -12,7 +12,16 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
 ![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan.gif)
 
-## permission：
+## Features
+- [x] Scan BR-CODE
+- [x] Scan QR-CODE
+- [x] Control the flash while scanning
+- [x] Apply for camera privileges
+- [x] Scanning BR-CODE or QR-CODE in albums
+- [ ] Display the switch button of the flashlight according to the light intensity
+- [ ] Support IOS
+
+## Permission：
 `<uses-permission android:name="android.permission.CAMERA" />`
 
 ## Installation
@@ -31,15 +40,6 @@ import 'package:qrscan/qrscan.dart' as scanner;
 String cameraScanResult = await scanner.scan();
 String photoScanResult = await scanner.scanPhoto();
 ```
-
-## Features
-- [x] Scan BR-CODE
-- [x] Scan QR-CODE
-- [x] Control the flash while scanning
-- [x] Apply for camera privileges
-- [x] Scanning BR-CODE and QR-CODE in albums
-- [ ] Display the switch button of the flashlight according to the light intensity
-- [ ] Support IOS
 
 ## Contribute
 
