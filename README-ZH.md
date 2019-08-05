@@ -19,7 +19,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.3
+ qrscan: ^0.2.4
 ```
 
 ## 使用方式
@@ -27,6 +27,8 @@ dependencies:
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String barcode = await scanner.scan();
+
+String photoScanResult = await scanner.scanPhoto();
 ```
 
 ## 贡献

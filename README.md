@@ -30,14 +30,17 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.3
+ qrscan: ^0.2.4
 ```
 
 ## Usage example
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
+/// Open the scanner view to do the scanner work.
 String cameraScanResult = await scanner.scan();
+
+/// Open the album and select the photos for scanning.
 String photoScanResult = await scanner.scanPhoto();
 ```
 

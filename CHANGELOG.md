@@ -15,3 +15,4 @@
 ## 0.2.1 - (2019/08/03)  Adjust the layout
 ## 0.2.2 - (2019/08/05)  Apply for camera privileges
 ## 0.2.3 - (2019/08/05)  Scanning BR-CODE and QR-CODE in albums
+## 0.2.4 - (2019/08/05)
