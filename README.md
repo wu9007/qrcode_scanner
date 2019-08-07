@@ -34,17 +34,17 @@ String photoScanResult = await scanner.scanPhoto();
 
 ## Supported
 
-  - Scan BR-CODE
-  - Scan QR-CODE
-  - Control the flash while scanning
-  - Apply for camera privileges
-  - Scanning BR-CODE or QR-CODE in albums
-  - Display the switch button of the flashlight according to the light intensity
+*  Scan BR-CODE
+*  Scan QR-CODE
+*  Control the flash while scanning
+*  Apply for camera privileges
+*  Scanning BR-CODE or QR-CODE in albums
+*  Display the switch button of the flashlight according to the light intensity
 
 ## Features
 
-- Generate QR-CODE and BR-CODE
-- Support IOS
+*  Generate QR-CODE and BR-CODE
+*  Support IOS
 
 ## Contribute
 

@@ -20,7 +20,7 @@ import com.shinow.qrscan.LightSensorEventListener;
 
 public class SecondActivity extends AppCompatActivity {
 
-    private static boolean isOpen = false;
+    public static boolean isLightOpen = false;
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
     private SensorManager sensorManager;
@@ -74,12 +74,12 @@ public class SecondActivity extends AppCompatActivity {
         lightLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isOpen) {
+                if (!isLightOpen) {
                     CodeUtils.isLightEnable(true);
-                    isOpen = true;
+                    isLightOpen = true;
                 } else {
                     CodeUtils.isLightEnable(false);
-                    isOpen = false;
+                    isLightOpen = false;
                 }
             }
         });

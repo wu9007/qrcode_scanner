@@ -20,7 +20,7 @@ class LightSensorEventListener implements SensorEventListener {
         // System.out.println("---------------------|||||||||||||---light strength: " + light_strength + "---|||||||||||-------------------------");
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             float light_strength = event.values[0];
-            if (lightLayout.getVisibility() == View.VISIBLE && light_strength > 300) {
+            if (lightLayout.getVisibility() == View.VISIBLE && light_strength > 300 && !SecondActivity.isLightOpen) {
                 lightLayout.setVisibility(View.INVISIBLE);
             } else if (lightLayout.getVisibility() == View.INVISIBLE && light_strength <= 300) {
                 lightLayout.setVisibility(View.VISIBLE);
