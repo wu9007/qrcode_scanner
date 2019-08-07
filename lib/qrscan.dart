@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter/services.dart';
 
@@ -13,3 +14,6 @@ Future<String> scan() async => await _channel.invokeMethod('scan');
 
 /// Scanning Photo Bar Code or QR Code return content
 Future<String> scanPhoto() async => await _channel.invokeMethod('scan_photo');
+
+/// Generating Bar Code Uint8List
+Future<Uint8List> generateBarCode(String code) async => await _channel.invokeMethod('generate_barcode', {"code": code});

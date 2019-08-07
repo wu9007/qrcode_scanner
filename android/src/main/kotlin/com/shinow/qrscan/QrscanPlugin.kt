@@ -16,6 +16,7 @@ import com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE
 import com.uuzuche.lib_zxing.activity.ZXingLibrary
 
 import  com.shinow.qrscan.ImageUtil
+import java.io.ByteArrayOutputStream
 
 /**
  * @author shusheng 2018/9/30
@@ -48,6 +49,9 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
         } else if (call.method == "scan_photo") {
             this.result = result
             choosePhotos()
+        } else if (call.method == "generate_barcode") {
+            this.result = result
+            generateQrCode(call)
         } else {
             result.notImplemented()
         }
@@ -63,6 +67,15 @@ class QrscanPlugin(val activity: Activity) : MethodCallHandler,
         intent.setAction(Intent.ACTION_PICK)
         intent.setType("image/*")
         activity.startActivityForResult(intent, REQUEST_IMAGE)
+    }
+
+    private fun generateQrCode(call: MethodCall) {
+        val code: String? = call.argument("code")
+        val bitmap = CodeUtils.createImage(code, 400, 400, null);
+        val baos = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+        val datas = baos.toByteArray()
+        this.result?.success(datas)
     }
 
     override fun onActivityResult(code: Int, resultCode: Int, intent: Intent?): Boolean {

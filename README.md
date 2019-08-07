@@ -20,15 +20,21 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.7
+ qrscan: ^0.2.8
 ```
 
 ## Usage example
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
+// Open Scanning View to Parse Bar-Code or QR-Code
 String cameraScanResult = await scanner.scan();
+
+// Select Bar-Code or QR-Code photos for analysis
 String photoScanResult = await scanner.scanPhoto();
+
+// Generating QR-Code
+Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
 ```
 
 ## Supported
@@ -39,10 +45,11 @@ String photoScanResult = await scanner.scanPhoto();
 -  [x] Apply for camera privileges
 -  [x] Scanning BR-CODE or QR-CODE in albums
 -  [x] Display the switch button of the flashlight according to the light intensity
+-  [x] Generate QR-CODE
 
 ## Features
 
--  Generate QR-CODE and BR-CODE
+-  Generate BR-CODE
 -  Support IOS
 
 ## Contribute
