@@ -4,7 +4,6 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
   
 [![License][license-image]][license-url] 
 [![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2564729935f441b4987fd4f49ac988d8)](https://www.codacy.com/app/leyan95/qrcode_scanner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=leyan95/qrcode_scanner&amp;utm_campaign=Badge_Grade)
 
 A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
@@ -21,7 +20,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.6
+ qrscan: ^0.2.7
 ```
 
 ## Usage example
@@ -34,17 +33,17 @@ String photoScanResult = await scanner.scanPhoto();
 
 ## Supported
 
-1.    Scan BR-CODE
-2.    Scan QR-CODE
-3.    Control the flash while scanning
-4.    Apply for camera privileges
-5.    Scanning BR-CODE or QR-CODE in albums
-6.    Display the switch button of the flashlight according to the light intensity
+-  [x] Scan BR-CODE
+-  [x] Scan QR-CODE
+-  [x] Control the flash while scanning
+-  [x] Apply for camera privileges
+-  [x] Scanning BR-CODE or QR-CODE in albums
+-  [x] Display the switch button of the flashlight according to the light intensity
 
 ## Features
 
-1.    Generate QR-CODE and BR-CODE
-2.    Support IOS
+-  Generate QR-CODE and BR-CODE
+-  Support IOS
 
 ## Contribute
 

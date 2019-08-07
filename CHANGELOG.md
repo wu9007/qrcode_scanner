@@ -18,3 +18,4 @@
 ## 0.2.4 - (2019/08/05)
 ## 0.2.5 - (2019/08/07)  Display the switch button of the flashlight according to the light intensity
 ## 0.2.6 - (2019/08/07)
+## 0.2.7 - (2019/08/07)
