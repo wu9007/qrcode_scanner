@@ -17,6 +17,7 @@ class LightSensorEventListener implements SensorEventListener {
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        // System.out.println("---------------------|||||||||||||---light strength: " + light_strength + "---|||||||||||-------------------------");
         if (event.sensor.getType() == Sensor.TYPE_LIGHT) {
             float light_strength = event.values[0];
             if (lightLayout.getVisibility() == View.VISIBLE && light_strength > 300) {
@@ -29,5 +30,6 @@ class LightSensorEventListener implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        System.out.println("---------------------|||||||||||||---onAccuracyChanged---|||||||||||-------------------------");
     }
 }

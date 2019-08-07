@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.LinearLayout;
 
 import android.hardware.Sensor;
-import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 
@@ -25,6 +24,7 @@ public class SecondActivity extends AppCompatActivity {
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
     private SensorManager sensorManager;
+    private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
 
     @Override
@@ -40,14 +40,27 @@ public class SecondActivity extends AppCompatActivity {
         backLayout = (LinearLayout) findViewById(R.id.scan_back);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        Sensor lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        if (lightSensor != null) {
-            sensorEventListener = new LightSensorEventListener(lightLayout);
-            sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+        sensorEventListener = new LightSensorEventListener(lightLayout);
 
         initView();
         initPermission();
+    }
+
+    @Override
+    protected void onResume() {
+        // System.out.println("---------------------|||||||||||||---onResume---|||||||||||-------------------------");
+        super.onResume();
+        if (lightSensor != null) {
+            sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        // System.out.println("---------------------|||||||||||||---onPause---|||||||||||-------------------------");
+        sensorManager.unregisterListener(sensorEventListener);
+        super.onPause();
     }
 
     private void initPermission() {
@@ -76,12 +89,6 @@ public class SecondActivity extends AppCompatActivity {
                 SecondActivity.this.finish();
             }
         });
-    }
-
-    @Override
-    protected void onPause() {
-        sensorManager.unregisterListener(sensorEventListener);
-        super.onPause();
     }
 
     private CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {
