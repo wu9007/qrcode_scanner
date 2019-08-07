@@ -16,3 +16,4 @@
 ## 0.2.2 - (2019/08/05)  Apply for camera privileges
 ## 0.2.3 - (2019/08/05)  Scanning BR-CODE and QR-CODE in albums
 ## 0.2.4 - (2019/08/05)
+## 0.2.4 - (2019/08/07)  Display the switch button of the flashlight according to the light intensity
