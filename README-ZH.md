@@ -19,7 +19,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.9
+ qrscan: ^0.2.10
 ```
 
 ## 使用方式

@@ -24,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.9
+ qrscan: ^0.2.10
 ```
 
 ## Usage example
@@ -43,13 +43,13 @@ Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrc
 
 ## Supported
 
--[x] Scan BR-CODE
--[x] Scan QR-CODE
--[x] Control the flash while scanning
--[x] Apply for camera privileges
--[x] Scanning BR-CODE or QR-CODE in albums
--[x] Display the switch button of the flashlight according to the light intensity
--[x] Generate QR-CODE
+-  [x] Scan BR-CODE
+-  [x] Scan QR-CODE
+-  [x] Control the flash while scanning
+-  [x] Apply for camera privileges
+-  [x] Scanning BR-CODE or QR-CODE in albums
+-  [x] Display the switch button of the flashlight according to the light intensity
+-  [x] Generate QR-CODE
 
 ## Features
 
