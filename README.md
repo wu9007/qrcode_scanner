@@ -12,7 +12,11 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 ![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan.gif)
 
 ## Permission：
-`<uses-permission android:name="android.permission.CAMERA" />`
+```
+<uses-permission android:name="android.permission.CAMERA" />
+<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+```
 
 ## Installation
 
@@ -20,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.8
+ qrscan: ^0.2.9
 ```
 
 ## Usage example

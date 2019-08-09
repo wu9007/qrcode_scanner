@@ -16,4 +16,7 @@ Future<String> scan() async => await _channel.invokeMethod('scan');
 Future<String> scanPhoto() async => await _channel.invokeMethod('scan_photo');
 
 /// Generating Bar Code Uint8List
-Future<Uint8List> generateBarCode(String code) async => await _channel.invokeMethod('generate_barcode', {"code": code});
+Future<Uint8List> generateBarCode(String code) async {
+  assert(code != null && code.isNotEmpty);
+  return await _channel.invokeMethod('generate_barcode', {"code": code});
+}

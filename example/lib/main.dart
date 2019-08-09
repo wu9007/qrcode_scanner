@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 void main() {
@@ -15,92 +16,72 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _outputBarcode = '';
   Uint8List bytes = Uint8List(0);
   TextEditingController _inputController;
+  TextEditingController _outputController;
 
   @override
   initState() {
     super.initState();
     this._inputController = new TextEditingController();
+    this._outputController = new TextEditingController();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        appBar: AppBar(
-          title: Text('Qrcode Scanner Example'),
-        ),
         backgroundColor: Colors.grey[300],
-        body: ListView(
-          children: <Widget>[
-            _qrCodeWidget(this.bytes),
-            Container(
-              color: Colors.white,
-              child: Column(
-                children: <Widget>[
-                  TextField(
-                    controller: this._inputController,
-                    keyboardType: TextInputType.text,
-                    textInputAction: TextInputAction.go,
-                    onSubmitted: (value) => _generateBarCode(value),
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.text_fields),
-                      helperText: 'Please input your code to generage qrcode image.',
-                      hintText: 'Please Input Your Code',
-                      hintStyle: TextStyle(fontSize: 15),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Text('RESULT  $_outputBarcode'),
-                  SizedBox(height: 20),
-                  Row(
+        body: Builder(
+          builder: (BuildContext context) {
+            return ListView(
+              children: <Widget>[
+                _qrCodeWidget(this.bytes, context),
+                Container(
+                  color: Colors.white,
+                  child: Column(
                     children: <Widget>[
-                      Expanded(
-                        flex: 1,
-                        child: SizedBox(
-                          height: 100,
-                          child: InkWell(
-                            onTap: () => _generateBarCode(this._inputController.text),
-                            child: Card(child: Text("Generate")),
-                          ),
+                      TextField(
+                        controller: this._inputController,
+                        keyboardType: TextInputType.url,
+                        textInputAction: TextInputAction.go,
+                        onSubmitted: (value) => _generateBarCode(value),
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.text_fields),
+                          helperText: 'Please input your code to generage qrcode image.',
+                          hintText: 'Please Input Your Code',
+                          hintStyle: TextStyle(fontSize: 15),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
                         ),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: SizedBox(
-                          height: 100,
-                          child: InkWell(
-                            onTap: _scan,
-                            child: Card(child: Text("Scan")),
-                          ),
+                      SizedBox(height: 20),
+                      TextField(
+                        controller: this._outputController,
+                        readOnly: true,
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.wrap_text),
+                          helperText: 'The barcode or qrcode you scan will be displayed in this area.',
+                          hintText: 'The barcode or qrcode you scan will be displayed in this area.',
+                          hintStyle: TextStyle(fontSize: 15),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
                         ),
                       ),
-                      Expanded(
-                        flex: 1,
-                        child: SizedBox(
-                          height: 100,
-                          child: InkWell(
-                            onTap: _scanPhoto,
-                            child: Card(child: Text("Scan Photo")),
-                          ),
-                        ),
-                      ),
+                      SizedBox(height: 20),
+                      this._buttonGroup(),
+                      SizedBox(height: 70),
                     ],
                   ),
-                  SizedBox(height: 70),
-                ],
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _qrCodeWidget(Uint8List bytes) {
+  Widget _qrCodeWidget(Uint8List bytes, BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(20),
       child: Card(
@@ -124,11 +105,11 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              padding: EdgeInsets.only(left: 40, right: 40, top: 30, bottom: 10),
               child: Column(
                 children: <Widget>[
                   SizedBox(
-                    height: 220,
+                    height: 190,
                     child: bytes.isEmpty
                         ? Center(
                             child: Text('Empty code ... ', style: TextStyle(color: Colors.black38)),
@@ -136,16 +117,42 @@ class _MyAppState extends State<MyApp> {
                         : Image.memory(bytes),
                   ),
                   Padding(
-                    padding: EdgeInsets.only(top: 7),
+                    padding: EdgeInsets.only(top: 7, left: 25, right: 25),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: <Widget>[
-                        GestureDetector(
-                          child: Text('remove', style: TextStyle(fontSize: 15, color: Colors.blue)),
-                          onTap: () => this.setState(() => this.bytes = Uint8List(0)),
+                        Expanded(
+                          flex: 5,
+                          child: GestureDetector(
+                            child: Text(
+                              'remove',
+                              style: TextStyle(fontSize: 15, color: Colors.blue),
+                              textAlign: TextAlign.left,
+                            ),
+                            onTap: () => this.setState(() => this.bytes = Uint8List(0)),
+                          ),
                         ),
-                        Text('    |    ', style: TextStyle(fontSize: 15, color: Colors.black26)),
-                        Text('save', style: TextStyle(fontSize: 15, color: Colors.blue)),
+                        Text('|', style: TextStyle(fontSize: 15, color: Colors.black26)),
+                        Expanded(
+                          flex: 5,
+                          child: GestureDetector(
+                            onTap: () async {
+                              final success = await ImageGallerySaver.save(this.bytes);
+                              SnackBar snackBar;
+                              if (success) {
+                                snackBar = new SnackBar(content: new Text('Successful Preservation!'));
+                                Scaffold.of(context).showSnackBar(snackBar);
+                              } else {
+                                snackBar = new SnackBar(content: new Text('Save failed!'));
+                              }
+                            },
+                            child: Text(
+                              'save',
+                              style: TextStyle(fontSize: 15, color: Colors.blue),
+                              textAlign: TextAlign.right,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   )
@@ -170,14 +177,84 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
+  Widget _buttonGroup() {
+    return Row(
+      children: <Widget>[
+        Expanded(
+          flex: 1,
+          child: SizedBox(
+            height: 120,
+            child: InkWell(
+              onTap: () => _generateBarCode(this._inputController.text),
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: Image.asset('images/generate_qrcode.png'),
+                    ),
+                    Divider(height: 20),
+                    Expanded(flex: 1, child: Text("Generate")),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: SizedBox(
+            height: 120,
+            child: InkWell(
+              onTap: _scan,
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: Image.asset('images/scanner.png'),
+                    ),
+                    Divider(height: 20),
+                    Expanded(flex: 1, child: Text("Scan")),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          flex: 1,
+          child: SizedBox(
+            height: 120,
+            child: InkWell(
+              onTap: _scanPhoto,
+              child: Card(
+                child: Column(
+                  children: <Widget>[
+                    Expanded(
+                      flex: 2,
+                      child: Image.asset('images/albums.png'),
+                    ),
+                    Divider(height: 20),
+                    Expanded(flex: 1, child: Text("Scan Photo")),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Future _scan() async {
     String barcode = await scanner.scan();
-    setState(() => this._outputBarcode = barcode);
+    this._outputController.text = barcode;
   }
 
   Future _scanPhoto() async {
     String barcode = await scanner.scanPhoto();
-    setState(() => this._outputBarcode = barcode);
+    this._outputController.text = barcode;
   }
 
   Future _generateBarCode(String inputCode) async {
