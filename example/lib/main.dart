@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -14,12 +15,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String barcode = '';
-  Uint8List bytes = Uint8List(200);
+  String _outputBarcode = '';
+  Uint8List bytes = Uint8List(0);
+  TextEditingController _inputController;
 
   @override
   initState() {
     super.initState();
+    this._inputController = new TextEditingController();
   }
 
   @override
@@ -29,22 +32,106 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text('Qrcode Scanner Example'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: Image.memory(bytes),
+        backgroundColor: Colors.grey[300],
+        body: ListView(
+          children: <Widget>[
+            _qrCodeWidget(this.bytes),
+            Container(
+              color: Colors.white,
+              child: Column(
+                children: <Widget>[
+                  TextField(
+                    controller: this._inputController,
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.go,
+                    onSubmitted: (value) => _generateBarCode(value),
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(Icons.text_fields),
+                      helperText: 'Please input your code to generage qrcode image.',
+                      hintText: 'Please Input Your Code',
+                      hintStyle: TextStyle(fontSize: 15),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text('RESULT  $_outputBarcode'),
+                  RaisedButton(onPressed: () => _generateBarCode(this._inputController.text), child: Text("Generate")),
+                  RaisedButton(onPressed: _scan, child: Text("Scan")),
+                  RaisedButton(onPressed: _scanPhoto, child: Text("Scan Photo")),
+                ],
               ),
-              Text('RESULT  $barcode'),
-              RaisedButton(onPressed: _scan, child: Text("Scan")),
-              RaisedButton(onPressed: _scanPhoto, child: Text("Scan Photo")),
-              RaisedButton(onPressed: _generateBarCode, child: Text("Generate Barcode")),
-            ],
-          ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _qrCodeWidget(Uint8List bytes) {
+    return Padding(
+      padding: EdgeInsets.all(20),
+      child: Card(
+        elevation: 6,
+        child: Column(
+          children: <Widget>[
+            Container(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: <Widget>[
+                  Icon(Icons.verified_user, size: 18, color: Colors.green),
+                  Text('  Generate Qrcode', style: TextStyle(fontSize: 15)),
+                  Spacer(),
+                  Icon(Icons.more_vert, size: 18, color: Colors.black54),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+              child: Column(
+                children: <Widget>[
+                  SizedBox(
+                    height: 220,
+                    child: bytes.isEmpty
+                        ? Center(
+                            child: Text('Empty code ... ', style: TextStyle(color: Colors.black38)),
+                          )
+                        : Image.memory(bytes),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(top: 7),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: <Widget>[
+                        GestureDetector(
+                          child: Text('remove', style: TextStyle(fontSize: 15, color: Colors.blue)),
+                          onTap: () => this.setState(() => this.bytes = Uint8List(0)),
+                        ),
+                        Text('    |    ', style: TextStyle(fontSize: 15, color: Colors.black26)),
+                        Text('save', style: TextStyle(fontSize: 15, color: Colors.blue)),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+            Divider(height: 2, color: Colors.black26),
+            Container(
+              child: Row(
+                children: <Widget>[
+                  Icon(Icons.history, size: 16, color: Colors.black38),
+                  Text('  Generate History', style: TextStyle(fontSize: 14, color: Colors.black38)),
+                  Spacer(),
+                  Icon(Icons.chevron_right, size: 16, color: Colors.black38),
+                ],
+              ),
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+            )
+          ],
         ),
       ),
     );
@@ -52,16 +139,16 @@ class _MyAppState extends State<MyApp> {
 
   Future _scan() async {
     String barcode = await scanner.scan();
-    setState(() => this.barcode = barcode);
+    setState(() => this._outputBarcode = barcode);
   }
 
   Future _scanPhoto() async {
     String barcode = await scanner.scanPhoto();
-    setState(() => this.barcode = barcode);
+    setState(() => this._outputBarcode = barcode);
   }
 
-  Future _generateBarCode() async {
-    Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
+  Future _generateBarCode(String inputCode) async {
+    Uint8List result = await scanner.generateBarCode(inputCode);
     this.setState(() => this.bytes = result);
   }
 }
