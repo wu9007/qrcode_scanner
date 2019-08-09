@@ -53,11 +53,44 @@ class _MyAppState extends State<MyApp> {
                       contentPadding: EdgeInsets.symmetric(horizontal: 7, vertical: 15),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 20),
                   Text('RESULT  $_outputBarcode'),
-                  RaisedButton(onPressed: () => _generateBarCode(this._inputController.text), child: Text("Generate")),
-                  RaisedButton(onPressed: _scan, child: Text("Scan")),
-                  RaisedButton(onPressed: _scanPhoto, child: Text("Scan Photo")),
+                  SizedBox(height: 20),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        flex: 1,
+                        child: SizedBox(
+                          height: 100,
+                          child: InkWell(
+                            onTap: () => _generateBarCode(this._inputController.text),
+                            child: Card(child: Text("Generate")),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: SizedBox(
+                          height: 100,
+                          child: InkWell(
+                            onTap: _scan,
+                            child: Card(child: Text("Scan")),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 1,
+                        child: SizedBox(
+                          height: 100,
+                          child: InkWell(
+                            onTap: _scanPhoto,
+                            child: Card(child: Text("Scan Photo")),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 70),
                 ],
               ),
             ),
