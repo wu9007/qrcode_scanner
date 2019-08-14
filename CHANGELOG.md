@@ -22,3 +22,4 @@
 ## 0.2.8 - (2019/08/07)  Generate QR-CODE
 ## 0.2.9 - (2019/08/09)  Update demo style
 ## 0.2.10 - (2019/08/09)  Update Readme
+## 0.2.11 - (2019/08/14)  Update Readme

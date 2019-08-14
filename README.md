@@ -12,7 +12,7 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 ![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan.gif)
 
 ## Permission：
-```
+```xml
 <uses-permission android:name="android.permission.CAMERA" />
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
@@ -24,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.10
+ qrscan: ^0.2.11
 ```
 
 ## Usage example
@@ -55,6 +55,10 @@ Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrc
 
 -  Generate BR-CODE
 -  Support IOS
+
+## Demo App
+
+![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan_demo.gif)
 
 ## Contribute
 
