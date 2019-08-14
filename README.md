@@ -27,18 +27,11 @@ dependencies:
  qrscan: ^0.2.11
 ```
 
-## Usage example
+## Scan Usage example
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
-// Open Scanning View to Parse Bar-Code or QR-Code
 String cameraScanResult = await scanner.scan();
-
-// Select Bar-Code or QR-Code photos for analysis
-String photoScanResult = await scanner.scanPhoto();
-
-// Generating QR-Code
-Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
 ```
 
 ## Supported
@@ -59,6 +52,17 @@ Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrc
 ## Demo App
 
 ![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan_demo.gif)
+
+## Select Bar-Code or QR-Code photos for analysis and Generating QR-Code 
+```dart
+import 'package:qrscan/qrscan.dart' as scanner;
+
+// Select Bar-Code or QR-Code photos for analysis
+String photoScanResult = await scanner.scanPhoto();
+
+// Generating QR-Code
+Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
+```
 
 ## Contribute
 
