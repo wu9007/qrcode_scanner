@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -15,8 +15,6 @@ import android.hardware.SensorManager;
 
 import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
-import com.shinow.qrscan.CheckPermissionUtils;
-import com.shinow.qrscan.LightSensorEventListener;
 
 public class SecondActivity extends AppCompatActivity {
 

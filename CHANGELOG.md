@@ -24,3 +24,4 @@
 ## 0.2.10 - (2019/08/09)  Update Readme
 ## 0.2.11 - (2019/08/14)  Update Readme
 ## 0.2.12 - (2019/08/19)  Migrate to AndroidX
+## 0.2.13 - (2019/08/20)  Migrate to AndroidX
