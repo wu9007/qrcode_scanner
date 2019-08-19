@@ -18,6 +18,7 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url 'https://jitpack.io' }
     }
 }
 
@@ -45,5 +46,6 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.1.1'
     implementation 'com.android.support:design:25.1.1'
     implementation 'pub.devrel:easypermissions:0.2.0'
-    implementation 'cn.yipianfengye.android:zxing-library:2.2'
+    //implementation 'cn.yipianfengye.android:zxing-library:2.2'
+    implementation 'com.github.leyan95:android-zxingLibrary:0.1.0-PRE'
 }
