@@ -137,7 +137,7 @@ class _MyAppState extends State<MyApp> {
                           flex: 5,
                           child: GestureDetector(
                             onTap: () async {
-                              final success = await ImageGallerySaver.save(this.bytes);
+                              final success = await ImageGallerySaver.saveImage(this.bytes);
                               SnackBar snackBar;
                               if (success) {
                                 snackBar = new SnackBar(content: new Text('Successful Preservation!'));

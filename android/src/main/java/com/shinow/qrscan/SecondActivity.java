@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.LinearLayout;
@@ -34,15 +33,14 @@ public class SecondActivity extends AppCompatActivity {
         captureFragment.setAnalyzeCallback(analyzeCallback);
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_my_container, captureFragment).commit();
 
-        lightLayout = (LinearLayout) findViewById(R.id.scan_light);
-        backLayout = (LinearLayout) findViewById(R.id.scan_back);
+        lightLayout = findViewById(R.id.scan_light);
+        backLayout = findViewById(R.id.scan_back);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
         sensorEventListener = new LightSensorEventListener(lightLayout);
 
         initView();
-        initPermission();
     }
 
     @Override
@@ -59,13 +57,6 @@ public class SecondActivity extends AppCompatActivity {
         // System.out.println("---------------------|||||||||||||---onPause---|||||||||||-------------------------");
         sensorManager.unregisterListener(sensorEventListener);
         super.onPause();
-    }
-
-    private void initPermission() {
-        String[] permissions = CheckPermissionUtils.checkPermission(this);
-        if (permissions.length != 0) {
-            ActivityCompat.requestPermissions(this, permissions, 100);
-        }
     }
 
     private void initView() {

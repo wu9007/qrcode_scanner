@@ -41,8 +41,8 @@
     >
         <LinearLayout
                 android:id="@+id/scan_back"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="31dp"
+                android:layout_height="31dp"
                 android:orientation="vertical"
         >
 
@@ -52,19 +52,19 @@
                     android:background="@mipmap/ic_back"
             />
         </LinearLayout>
-        <LinearLayout
-                android:id="@+id/choose_photo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
+        <!--<LinearLayout-->
+                <!--android:id="@+id/choose_photo"-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:gravity="center_vertical"-->
+                <!--android:orientation="vertical">-->
 
-            <ImageView
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_gravity="right"
-                    android:src="@mipmap/ic_photo"/>
-        </LinearLayout>
+            <!--<ImageView-->
+                    <!--android:layout_width="31dp"-->
+                    <!--android:layout_height="31dp"-->
+                    <!--android:layout_gravity="right"-->
+                    <!--android:src="@mipmap/ic_photo"/>-->
+        <!--</LinearLayout>-->
     </LinearLayout>
 
 </FrameLayout>

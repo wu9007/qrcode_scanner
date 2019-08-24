@@ -24,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.13
+ qrscan: ^0.2.14
 ```
 
 ## Scan Usage example
