@@ -1,10 +1,15 @@
 package com.shinow.qrscan;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -18,8 +23,10 @@ import com.uuzuche.lib_zxing.activity.CodeUtils;
 public class SecondActivity extends AppCompatActivity {
 
     public static boolean isLightOpen = false;
+    private int REQUEST_IMAGE = 101;
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
+    private LinearLayout photoLayout;
     private SensorManager sensorManager;
     private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
@@ -35,6 +42,7 @@ public class SecondActivity extends AppCompatActivity {
 
         lightLayout = findViewById(R.id.scan_light);
         backLayout = findViewById(R.id.scan_back);
+        photoLayout = findViewById(R.id.choose_photo);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -78,6 +86,32 @@ public class SecondActivity extends AppCompatActivity {
                 SecondActivity.this.finish();
             }
         });
+        photoLayout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setAction(Intent.ACTION_PICK);
+                intent.setType("image/*");
+                SecondActivity.this.startActivityForResult(intent, REQUEST_IMAGE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (requestCode == REQUEST_IMAGE) {
+            if (data != null) {
+                Uri uri = data.getData();
+                String path = ImageUtil.getImageAbsolutePath(SecondActivity.this, uri);
+                Intent intent = new Intent();
+                intent.setClass(SecondActivity.this, QrscanPlugin.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("path", path);
+                intent.putExtra("secondBundle", bundle);
+                setResult(Activity.RESULT_OK, intent);
+                SecondActivity.this.finish();
+            }
+        }
     }
 
     private CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {

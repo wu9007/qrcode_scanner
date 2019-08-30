@@ -1,70 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:id="@+id/activity_second"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:id="@+id/activity_second"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <FrameLayout
-            android:id="@+id/fl_my_container"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:visibility="visible"
-    ></FrameLayout>
+        android:id="@+id/fl_my_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"></FrameLayout>
 
 
     <LinearLayout
-            android:id="@+id/scan_light"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="450dp"
-            android:layout_gravity="top|center_horizontal"
-    >
+        android:id="@+id/scan_light"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="450dp"
+        android:orientation="vertical">
 
         <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@mipmap/ic_light"
-        />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@mipmap/ic_light" />
     </LinearLayout>
 
     <LinearLayout
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingTop="10dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:layout_gravity="top|center_horizontal"
-            android:orientation="horizontal"
-            android:background="#AA333333"
-    >
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:background="#AA333333"
+        android:orientation="horizontal">
+
         <LinearLayout
-                android:id="@+id/scan_back"
-                android:layout_width="31dp"
-                android:layout_height="31dp"
-                android:orientation="vertical"
-        >
+            android:id="@+id/scan_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:orientation="vertical"
+            android:padding="14dp">
 
             <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:background="@mipmap/ic_back"
-            />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right"
+                android:background="@mipmap/ic_back" />
         </LinearLayout>
-        <!--<LinearLayout-->
-                <!--android:id="@+id/choose_photo"-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:gravity="center_vertical"-->
-                <!--android:orientation="vertical">-->
 
-            <!--<ImageView-->
-                    <!--android:layout_width="31dp"-->
-                    <!--android:layout_height="31dp"-->
-                    <!--android:layout_gravity="right"-->
-                    <!--android:src="@mipmap/ic_photo"/>-->
-        <!--</LinearLayout>-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/choose_photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="right"
+                android:padding="14dp"
+                android:src="@mipmap/ic_photo" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>

@@ -26,3 +26,4 @@
 ## 0.2.12 - (2019/08/19)  Migrate to AndroidX
 ## 0.2.13 - (2019/08/20)  Migrate to AndroidX
 ## 0.2.14 - (2019/08/24)  Repair the problem of scanned pictures
+## 0.2.15 - (2019/08/30)  Select photo on the scan page to scanning.

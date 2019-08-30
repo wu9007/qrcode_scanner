@@ -88,11 +88,21 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
     public boolean onActivityResult(int code, int resultCode, Intent intent) {
         if (code == REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
-                Bundle bundle = intent.getExtras();
-                if (bundle != null) {
-                    if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
-                        String barcode = bundle.getString(CodeUtils.RESULT_STRING);
-                        this.result.success(barcode);
+                Bundle secondBundle = intent.getBundleExtra("secondBundle");
+                if (secondBundle != null) {
+                    try {
+                        CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, intent);
+                        CodeUtils.analyzeBitmap(secondBundle.getString("path"), analyzeCallback);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    Bundle bundle = intent.getExtras();
+                    if (bundle != null) {
+                        if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
+                            String barcode = bundle.getString(CodeUtils.RESULT_STRING);
+                            this.result.success(barcode);
+                        }
                     }
                 }
             } else {
