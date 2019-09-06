@@ -24,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.15
+ qrscan: ^0.2.16
 ```
 
 ## Scan Usage example
@@ -41,6 +41,7 @@ String cameraScanResult = await scanner.scan();
 -  [x] Control the flash while scanning
 -  [x] Apply for camera privileges
 -  [x] Scanning BR-CODE or QR-CODE in albums
+-  [x] Scanning the image of the specified path
 -  [x] Display the switch button of the flashlight according to the light intensity
 -  [x] Generate QR-CODE
 
@@ -62,6 +63,9 @@ String photoScanResult = await scanner.scanPhoto();
 
 // Generating QR-Code
 Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
+
+// Scanning the image of the specified path
+String barcode = await scanner.scanPath(path);
 ```
 
 ## Contribute

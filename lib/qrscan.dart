@@ -15,6 +15,12 @@ Future<String> scan() async => await _channel.invokeMethod('scan');
 /// Scanning Photo Bar Code or QR Code return content
 Future<String> scanPhoto() async => await _channel.invokeMethod('scan_photo');
 
+// Scanning the image of the specified path
+Future<String> scanPath(String path) async {
+  assert(path != null && path.isNotEmpty);
+  return await _channel.invokeMethod('scan_path', {"path": path});
+}
+
 /// Generating Bar Code Uint8List
 Future<Uint8List> generateBarCode(String code) async {
   assert(code != null && code.isNotEmpty);

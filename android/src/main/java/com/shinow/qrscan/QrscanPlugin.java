@@ -53,6 +53,12 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
                 this.result = result;
                 choosePhotos();
                 break;
+            case "scan_path":
+                this.result = result;
+                String path = call.argument("path");
+                CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, this.activity.getIntent());
+                CodeUtils.analyzeBitmap(path, analyzeCallback);
+                break;
             case "generate_barcode":
                 this.result = result;
                 generateQrCode(call);

@@ -27,3 +27,4 @@
 ## 0.2.13 - (2019/08/20)  Migrate to AndroidX
 ## 0.2.14 - (2019/08/24)  Repair the problem of scanned pictures
 ## 0.2.15 - (2019/08/30)  Select photo on the scan page to scanning.
+## 0.2.16 - (2019/09/06)  Scanning the image of the specified path.
