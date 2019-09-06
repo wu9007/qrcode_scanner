@@ -80,7 +80,7 @@ class _MyAppState extends State<MyApp> {
           },
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => _scanPath(),
+          onPressed: () => _scanBytes(),
           tooltip: 'Take a Photo',
           child: const Icon(Icons.camera_alt),
         ),
@@ -264,11 +264,15 @@ class _MyAppState extends State<MyApp> {
     this._outputController.text = barcode;
   }
 
-  Future _scanPath() async {
-    File file = await ImagePicker.pickImage(source: ImageSource.camera);
-    await ImageGallerySaver.saveImage(file.readAsBytesSync());
-    String path = file.path;
+  Future _scanPath(String path) async {
     String barcode = await scanner.scanPath(path);
+    this._outputController.text = barcode;
+  }
+
+  Future _scanBytes() async {
+    File file = await ImagePicker.pickImage(source: ImageSource.camera);
+    Uint8List bytes = file.readAsBytesSync();
+    String barcode = await scanner.scanBytes(bytes);
     this._outputController.text = barcode;
   }
 

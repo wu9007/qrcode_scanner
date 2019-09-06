@@ -21,6 +21,12 @@ Future<String> scanPath(String path) async {
   return await _channel.invokeMethod('scan_path', {"path": path});
 }
 
+// Parse to code string with uint8list
+Future<String> scanBytes(Uint8List uint8list) async {
+  assert(uint8list != null && uint8list.isNotEmpty);
+  return await _channel.invokeMethod('scan_bytes', {"bytes": uint8list});
+}
+
 /// Generating Bar Code Uint8List
 Future<Uint8List> generateBarCode(String code) async {
   assert(code != null && code.isNotEmpty);

@@ -3,6 +3,7 @@ package com.shinow.qrscan;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -58,6 +59,12 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
                 String path = call.argument("path");
                 CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, this.activity.getIntent());
                 CodeUtils.analyzeBitmap(path, analyzeCallback);
+                break;
+            case "scan_bytes":
+                this.result = result;
+                byte[] bytes = call.argument("bytes");
+                Bitmap  bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes != null ? bytes.length : 0);
+                CodeUtils.analyzeBitmap(bitmap, new CustomAnalyzeCallback(this.result, this.activity.getIntent()));
                 break;
             case "generate_barcode":
                 this.result = result;
