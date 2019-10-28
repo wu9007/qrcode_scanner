@@ -59,7 +59,6 @@ class _MyAppState extends State<MyApp> {
                       SizedBox(height: 20),
                       TextField(
                         controller: this._outputController,
-                        readOnly: true,
                         maxLines: 2,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.wrap_text),
@@ -256,7 +255,11 @@ class _MyAppState extends State<MyApp> {
 
   Future _scan() async {
     String barcode = await scanner.scan();
-    this._outputController.text = barcode;
+    if (barcode == null) {
+      print('nothing return.');
+    } else {
+      this._outputController.text = barcode;
+    }
   }
 
   Future _scanPhoto() async {

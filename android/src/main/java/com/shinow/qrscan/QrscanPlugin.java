@@ -115,6 +115,8 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
                         if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
                             String barcode = bundle.getString(CodeUtils.RESULT_STRING);
                             this.result.success(barcode);
+                        }else{
+                            this.result.success(null);
                         }
                     }
                 }

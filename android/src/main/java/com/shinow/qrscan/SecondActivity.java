@@ -10,6 +10,7 @@ import android.os.Bundle;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 
@@ -21,6 +22,7 @@ import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 
 public class SecondActivity extends AppCompatActivity {
+    private static final String TAG = SecondActivity.class.getSimpleName();
 
     public static boolean isLightOpen = false;
     private int REQUEST_IMAGE = 101;
@@ -113,6 +115,16 @@ public class SecondActivity extends AppCompatActivity {
                 SecondActivity.this.finish();
             }
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent resultIntent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putInt(CodeUtils.RESULT_TYPE, CodeUtils.RESULT_FAILED);
+        resultIntent.putExtras(bundle);
+        SecondActivity.this.setResult(RESULT_OK, resultIntent);
+        SecondActivity.this.finish();
     }
 
     private CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {

@@ -29,3 +29,4 @@
 ## 0.2.15 - (2019/08/30)  Select photo on the scan page to scanning.
 ## 0.2.16 - (2019/09/06)  Scanning the image of the specified path.
 ## 0.2.17 - (2019/09/06)  Parse to code string with uint8list.
+## 0.2.18 - (2019/10/28)  On back pressed return null.
