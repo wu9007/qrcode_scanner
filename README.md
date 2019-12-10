@@ -49,7 +49,11 @@ String cameraScanResult = await scanner.scan();
 ## Features
 
 -  Generate BR-CODE
--  Support IOS
+
+## TODO
+
+-  [] Support IOS (example builds, but invoking scanner does not return)
+-  [] Provide iOS setup documentation, if necessary
 
 ## Demo App
 
