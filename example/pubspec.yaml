@@ -16,12 +16,12 @@ dependencies:
   image_gallery_saver: ^1.1.0
   image_picker: ^0.6.1+4
 
+  qrscan:
+    path: ../
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
-  qrscan:
-    path: ../
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
