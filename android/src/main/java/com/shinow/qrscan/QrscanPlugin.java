@@ -6,7 +6,13 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
+import androidx.annotation.NonNull;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
@@ -22,31 +28,76 @@ import java.io.ByteArrayOutputStream;
 import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_SUCCESS;
 import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE;
 
-public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityResultListener {
+public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, PluginRegistry.ActivityResultListener {
 
-    private Result result = null;
-    private Activity activity;
+    private final static String TAG = "QrscanPlugin";
+
     private int REQUEST_CODE = 100;
     private int REQUEST_IMAGE = 101;
 
     public static void registerWith(Registrar registrar) {
-        MethodChannel channel = new MethodChannel(registrar.messenger(), "qr_scan");
-        QrscanPlugin plugin = new QrscanPlugin(registrar.activity());
-        channel.setMethodCallHandler(plugin);
+        QrscanPlugin plugin = new QrscanPlugin();
+        plugin.activity = registrar.activity();
+        plugin.channel = new MethodChannel(registrar.messenger(), "qr_scan");
+        plugin.channel.setMethodCallHandler(plugin);
         registrar.addActivityResultListener(plugin);
 
         ZXingLibrary.initDisplayOpinion(registrar.activity());
     }
 
-    public QrscanPlugin(Activity activity) {
-        this.activity = activity;
-        CheckPermissionUtils.initPermission(this.activity);
+    private Result result;
+    private Activity activity;
+    private MethodChannel channel;
+
+    public QrscanPlugin() {
+        Log.i(TAG, "QrscanPlugin: ", new Exception());
     }
 
     @Override
-    public void onMethodCall(MethodCall call, Result result) {
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        Log.i(TAG, "onAttachedToEngine: ");
+        channel = new MethodChannel(binding.getBinaryMessenger(), "qr_scan");
+        channel.setMethodCallHandler(this);
+    }
+
+    @Override
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        channel.setMethodCallHandler(null);
+        channel = null;
+        Log.i(TAG, "onDetachedFromEngine: ");
+    }
+
+    @Override
+    public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
+        Log.i(TAG, "onAttachedToActivity: ");
+        activity = binding.getActivity();
+        binding.addActivityResultListener(this);
+        ZXingLibrary.initDisplayOpinion(activity);
+    }
+
+    @Override
+    public void onDetachedFromActivity() {
+        activity = null;
+        Log.i(TAG, "onDetachedFromActivity: ");
+    }
+
+    @Override
+    public void onDetachedFromActivityForConfigChanges() {
+        onDetachedFromActivity();
+        Log.i(TAG, "onDetachedFromActivityForConfigChanges: ");
+    }
+
+    @Override
+    public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
+        Log.i(TAG, "onReattachedToActivityForConfigChanges: ");
+        onAttachedToActivity(binding);
+    }
+
+    @Override
+    public void onMethodCall(MethodCall call, @NonNull Result result) {
         switch (call.method) {
             case "scan":
+                Log.i(TAG, "scan");
                 this.result = result;
                 showBarcodeView();
                 break;
@@ -67,8 +118,7 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
                 CodeUtils.analyzeBitmap(bitmap, new CustomAnalyzeCallback(this.result, this.activity.getIntent()));
                 break;
             case "generate_barcode":
-                this.result = result;
-                generateQrCode(call);
+                this.result.success(generateQrCode(call));
                 break;
             default:
                 result.notImplemented();
@@ -88,13 +138,12 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
         activity.startActivityForResult(intent, REQUEST_IMAGE);
     }
 
-    private void generateQrCode(MethodCall call) {
+    private byte[] generateQrCode(MethodCall call) {
         String code = call.argument("code");
         Bitmap bitmap = CodeUtils.createImage(code, 400, 400, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] datas = baos.toByteArray();
-        this.result.success(datas);
+        return baos.toByteArray();
     }
 
     @Override
