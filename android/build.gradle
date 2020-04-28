@@ -40,5 +40,5 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'com.google.android.material:material:1.1.0'
     implementation 'pub.devrel:easypermissions:0.2.0'
-    implementation 'com.github.leyan95:android-zxingLibrary:0.1.2-PRE'
+    implementation 'com.github.leyan95:android-zxingLibrary:0.1.4-PRE'
 }
