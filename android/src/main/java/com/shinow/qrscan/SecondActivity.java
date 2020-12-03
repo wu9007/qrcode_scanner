@@ -29,6 +29,7 @@ public class SecondActivity extends AppCompatActivity {
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
     // private LinearLayout photoLayout;
+    private Button back_button;
     private SensorManager sensorManager;
     private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
@@ -45,6 +46,7 @@ public class SecondActivity extends AppCompatActivity {
         lightLayout = findViewById(R.id.scan_light);
         backLayout = findViewById(R.id.scan_back);
         // photoLayout = findViewById(R.id.choose_photo);
+        back_button = findViewById(r.id.back_button);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -80,6 +82,12 @@ public class SecondActivity extends AppCompatActivity {
                     CodeUtils.isLightEnable(false);
                     isLightOpen = false;
                 }
+            }
+        });
+        back_button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                SecondActivity.this.finish();
             }
         });
         backLayout.setOnClickListener(new View.OnClickListener() {
