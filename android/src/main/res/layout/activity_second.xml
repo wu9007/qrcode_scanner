@@ -35,7 +35,6 @@
             android:id="@+id/button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-<!--             android:layout_marginTop="8dp" -->
             android:background="@drawable/button_rounded"
             android:text="Cancel Scanning"
             android:textColor="#ffffff"
