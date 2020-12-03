@@ -7,7 +7,7 @@
     </solid>
 
     <corners
-        android:radius="20sp">
+        android:radius="10sp">
 
     </corners>
 
