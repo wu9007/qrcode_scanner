@@ -28,7 +28,7 @@ public class SecondActivity extends AppCompatActivity {
     private int REQUEST_IMAGE = 101;
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
-    private LinearLayout photoLayout;
+    // private LinearLayout photoLayout;
     private SensorManager sensorManager;
     private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
@@ -44,7 +44,7 @@ public class SecondActivity extends AppCompatActivity {
 
         lightLayout = findViewById(R.id.scan_light);
         backLayout = findViewById(R.id.scan_back);
-        photoLayout = findViewById(R.id.choose_photo);
+        // photoLayout = findViewById(R.id.choose_photo);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
@@ -88,15 +88,15 @@ public class SecondActivity extends AppCompatActivity {
                 SecondActivity.this.finish();
             }
         });
-        photoLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                SecondActivity.this.startActivityForResult(intent, REQUEST_IMAGE);
-            }
-        });
+        // photoLayout.setOnClickListener(new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View v) {
+        //         Intent intent = new Intent();
+        //         intent.setAction(Intent.ACTION_PICK);
+        //         intent.setType("image/*");
+        //         SecondActivity.this.startActivityForResult(intent, REQUEST_IMAGE);
+        //     }
+        // });
     }
 
     @Override
