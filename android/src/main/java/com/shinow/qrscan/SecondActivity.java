@@ -27,8 +27,8 @@ public class SecondActivity extends AppCompatActivity {
 
     public static boolean isLightOpen = false;
     private int REQUEST_IMAGE = 101;
-    private LinearLayout lightLayout;
-    private LinearLayout backLayout;
+//     private LinearLayout lightLayout;
+//     private LinearLayout backLayout;
     // private LinearLayout photoLayout;
     private Button back_button;
     private SensorManager sensorManager;
@@ -44,8 +44,8 @@ public class SecondActivity extends AppCompatActivity {
         captureFragment.setAnalyzeCallback(analyzeCallback);
         getSupportFragmentManager().beginTransaction().replace(R.id.fl_my_container, captureFragment).commit();
 
-        lightLayout = findViewById(R.id.scan_light);
-        backLayout = findViewById(R.id.scan_back);
+//         lightLayout = findViewById(R.id.scan_light);
+//         backLayout = findViewById(R.id.scan_back);
         // photoLayout = findViewById(R.id.choose_photo);
         back_button = findViewById(R.id.back_button);
 
@@ -73,30 +73,30 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        lightLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isLightOpen) {
-                    CodeUtils.isLightEnable(true);
-                    isLightOpen = true;
-                } else {
-                    CodeUtils.isLightEnable(false);
-                    isLightOpen = false;
-                }
-            }
-        });
+//         lightLayout.setOnClickListener(new View.OnClickListener() {
+//             @Override
+//             public void onClick(View v) {
+//                 if (!isLightOpen) {
+//                     CodeUtils.isLightEnable(true);
+//                     isLightOpen = true;
+//                 } else {
+//                     CodeUtils.isLightEnable(false);
+//                     isLightOpen = false;
+//                 }
+//             }
+//         });
         back_button.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v) {
                 SecondActivity.this.finish();
             }
         });
-        backLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SecondActivity.this.finish();
-            }
-        });
+//         backLayout.setOnClickListener(new View.OnClickListener() {
+//             @Override
+//             public void onClick(View v) {
+//                 SecondActivity.this.finish();
+//             }
+//         });
         // photoLayout.setOnClickListener(new View.OnClickListener() {
         //     @Override
         //     public void onClick(View v) {
