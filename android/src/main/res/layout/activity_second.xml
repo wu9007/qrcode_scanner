@@ -16,7 +16,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|center_horizontal"
                 android:layout_alignParentBottom="true"
-                android:layout_marginTop="70dp"
+                android:layout_marginBottom="70dp"
                 android:orientation="vertical"
                 android:padding="14dp">
           <Button
