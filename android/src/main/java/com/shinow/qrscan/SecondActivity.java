@@ -51,7 +51,7 @@ public class SecondActivity extends AppCompatActivity {
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        sensorEventListener = new LightSensorEventListener(lightLayout);
+//         sensorEventListener = new LightSensorEventListener(lightLayout);
 
         initView();
     }
@@ -60,9 +60,9 @@ public class SecondActivity extends AppCompatActivity {
     protected void onResume() {
         // System.out.println("---------------------|||||||||||||---onResume---|||||||||||-------------------------");
         super.onResume();
-        if (lightSensor != null) {
-            sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+//         if (lightSensor != null) {
+//             sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+//         }
     }
 
     @Override
