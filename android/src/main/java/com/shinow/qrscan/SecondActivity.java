@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 
 import android.hardware.Sensor;
@@ -46,7 +47,7 @@ public class SecondActivity extends AppCompatActivity {
         lightLayout = findViewById(R.id.scan_light);
         backLayout = findViewById(R.id.scan_back);
         // photoLayout = findViewById(R.id.choose_photo);
-        back_button = findViewById(r.id.back_button);
+        back_button = findViewById(R.id.back_button);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
