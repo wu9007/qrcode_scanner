@@ -27,8 +27,9 @@
                 
         <LinearLayout
                 android:id="@+id/scan_back"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="wrap_content"
+                android:layout_height="80dp"
+                android:layout_marginTop="50dp"
                 android:orientation="vertical"
                 android:padding="14dp">
           <Button
