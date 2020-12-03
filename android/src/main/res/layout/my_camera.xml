@@ -20,9 +20,6 @@
         app:inner_corner_color="@color/scan_corner_color_blue"
         app:inner_corner_length="20dp"
         app:inner_corner_width="4dp"
-        app:inner_scan_bitmap="@drawable/scan_blue"
-        app:inner_scan_speed="20"
-        app:inner_scan_iscircle="true"
         />
 
 </FrameLayout>
