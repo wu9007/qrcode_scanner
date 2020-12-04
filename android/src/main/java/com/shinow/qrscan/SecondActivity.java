@@ -20,6 +20,7 @@ import android.hardware.SensorManager;
 
 import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
+import android.widget.Toast;
 
 public class SecondActivity extends AppCompatActivity {
     private static final String TAG = SecondActivity.class.getSimpleName();
@@ -74,11 +75,19 @@ public class SecondActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if (!isLightOpen) {
-                    CodeUtils.isLightEnable(true);
-                    isLightOpen = true;
+                    try {
+                        CodeUtils.isLightEnable(true);
+                        isLightOpen = true;
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(), "Tidak bisa menyalakan senter", Toast.LENGTH_SHORT).show();
+                    }
                 } else {
-                    CodeUtils.isLightEnable(false);
-                    isLightOpen = false;
+                    try {
+                        CodeUtils.isLightEnable(false);
+                        isLightOpen = false;
+                    } catch (Exception e) {
+                        Toast.makeText(getApplicationContext(), "Tidak bisa menyalakan senter", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
