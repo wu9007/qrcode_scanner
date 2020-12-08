@@ -25,9 +25,9 @@ import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE;
 public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityResultListener {
 
     private Result result = null;
-    private Activity activity;
-    private int REQUEST_CODE = 100;
-    private int REQUEST_IMAGE = 101;
+    private final Activity activity;
+    private final int REQUEST_CODE = 100;
+    private final int REQUEST_IMAGE = 101;
 
     public static void registerWith(Registrar registrar) {
         MethodChannel channel = new MethodChannel(registrar.messenger(), "qr_scan");
@@ -40,7 +40,6 @@ public class QrscanPlugin implements MethodCallHandler, PluginRegistry.ActivityR
 
     public QrscanPlugin(Activity activity) {
         this.activity = activity;
-        CheckPermissionUtils.initPermission(this.activity);
     }
 
     @Override

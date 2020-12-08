@@ -31,3 +31,4 @@
 ## 0.2.17 - (2019/09/06)  Parse to code string with uint8list.
 ## 0.2.18 - (2019/10/28)  On back pressed return null.
 ## 0.2.19 - (2020/11/25)  Support QR code generation for iOS
+## 0.2.20 - (2020/12/08)  Remove unnecessarily asking for permissions at startup
