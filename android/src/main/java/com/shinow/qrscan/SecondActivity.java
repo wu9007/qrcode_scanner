@@ -79,14 +79,14 @@ public class SecondActivity extends AppCompatActivity {
                         CodeUtils.isLightEnable(true);
                         isLightOpen = true;
                     } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Tidak bisa menyalakan senter", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Can't use light", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     try {
                         CodeUtils.isLightEnable(false);
                         isLightOpen = false;
                     } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Tidak bisa menyalakan senter", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "Can't use light", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
