@@ -35,3 +35,4 @@
 ## 0.2.21 - (2020/12/09)  Show toast when there's exception on light
 ## 0.2.22 - (2021/01/27)  Always throws the error when the analyze fails
 ## 0.3.0 - (2021/04/03)  add null-safety support
+## 0.3.1 - (2021/04/04)  add null-safety support
