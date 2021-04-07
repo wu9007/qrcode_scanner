@@ -24,7 +24,7 @@ Add this to your package's pubspec.yaml file:
 
 ```yaml
 dependencies:
- qrscan: ^0.2.18
+ qrscan: ^0.2.22
 ```
 
 ## Scan Usage example
@@ -92,3 +92,8 @@ Created by Shusheng.
 
 [license-image]: https://img.shields.io/badge/License-MIT-blue.svg
 [license-url]: LICENSE
+
+
+## Thanks
+
+- <a href="https://www.jetbrains.com/?from=spring-boot-demo"><img src="http://static.xkcoding.com/spring-boot-demo/064312.jpg" width="100px" alt="jetbrains">**Thanks JetBrains Offer Open Source Free License**</a>

@@ -10,20 +10,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import io.flutter.embedding.engine.plugins.FlutterPlugin;
-import io.flutter.embedding.engine.plugins.activity.ActivityAware;
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
-import io.flutter.plugin.common.MethodChannel;
-import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
-import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.MethodCall;
-import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
-
 import com.uuzuche.lib_zxing.activity.CodeUtils;
 import com.uuzuche.lib_zxing.activity.ZXingLibrary;
 
 import java.io.ByteArrayOutputStream;
+
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
+import io.flutter.embedding.engine.plugins.activity.ActivityAware;
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding;
+import io.flutter.plugin.common.MethodCall;
+import io.flutter.plugin.common.MethodChannel;
+import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
+import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
+import io.flutter.plugin.common.PluginRegistry.Registrar;
 
 import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_SUCCESS;
 import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE;
@@ -32,9 +32,12 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
 
     private final static String TAG = "QrscanPlugin";
 
-    private int REQUEST_CODE = 100;
-    private int REQUEST_IMAGE = 101;
+    private Result result = null;
+    private Activity activity;
+    private final int REQUEST_CODE = 100;
+    private final int REQUEST_IMAGE = 101;
 
+    @Deprecated
     public static void registerWith(Registrar registrar) {
         QrscanPlugin plugin = new QrscanPlugin();
         plugin.activity = registrar.activity();
@@ -45,13 +48,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         ZXingLibrary.initDisplayOpinion(registrar.activity());
     }
 
-    private Result result;
-    private Activity activity;
     private MethodChannel channel;
-
-    public QrscanPlugin() {
-        Log.i(TAG, "QrscanPlugin: ", new Exception());
-    }
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
@@ -95,6 +92,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
 
     @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
+        Log.i(TAG, "onMethodCall: " + call.method);
         switch (call.method) {
             case "scan":
                 Log.i(TAG, "scan");
@@ -114,11 +112,12 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
             case "scan_bytes":
                 this.result = result;
                 byte[] bytes = call.argument("bytes");
-                Bitmap  bitmap = BitmapFactory.decodeByteArray(bytes , 0, bytes != null ? bytes.length : 0);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes != null ? bytes.length : 0);
                 CodeUtils.analyzeBitmap(bitmap, new CustomAnalyzeCallback(this.result, this.activity.getIntent()));
                 break;
             case "generate_barcode":
-                this.result.success(generateQrCode(call));
+                this.result = result;
+                generateQrCode(call);
                 break;
             default:
                 result.notImplemented();
@@ -138,12 +137,13 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         activity.startActivityForResult(intent, REQUEST_IMAGE);
     }
 
-    private byte[] generateQrCode(MethodCall call) {
+    private void generateQrCode(MethodCall call) {
         String code = call.argument("code");
         Bitmap bitmap = CodeUtils.createImage(code, 400, 400, null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        return baos.toByteArray();
+        byte[] datas = baos.toByteArray();
+        this.result.success(datas);
     }
 
     @Override
@@ -164,7 +164,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
                         if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
                             String barcode = bundle.getString(CodeUtils.RESULT_STRING);
                             this.result.success(barcode);
-                        }else{
+                        } else {
                             this.result.success(null);
                         }
                     }

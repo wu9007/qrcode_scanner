@@ -1,5 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.shinow.qrscan">
 
     <uses-permission android:name="android.permission.CAMERA" />
@@ -14,7 +13,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <application tools:remove="android:allowBackup">
+    <application>
         <activity
             android:name=".SecondActivity"
             android:theme="@style/Theme.AppCompat.NoActionBar" />

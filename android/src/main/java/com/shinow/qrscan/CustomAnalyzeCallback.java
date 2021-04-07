@@ -22,8 +22,6 @@ public class CustomAnalyzeCallback implements CodeUtils.AnalyzeCallback {
     @Override
     public void onAnalyzeFailed() {
         String errorCode = this.intent.getStringExtra("ERROR_CODE");
-        if (errorCode != null) {
-            this.result.error(errorCode, null, null);
-        }
+        this.result.error(errorCode, null, null);
     }
 }
