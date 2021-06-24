@@ -30,6 +30,6 @@ class LightSensorEventListener implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        System.out.println("---------------------|||||||||||||---onAccuracyChanged---|||||||||||-------------------------");
+//        System.out.println("---------------------|||||||||||||---onAccuracyChanged---|||||||||||-------------------------");
     }
 }

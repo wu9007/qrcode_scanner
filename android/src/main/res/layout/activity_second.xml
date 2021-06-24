@@ -32,6 +32,20 @@
             android:background="#AA333333"
             android:orientation="horizontal">
 
+        <LinearLayout
+                android:id="@+id/scan_back"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="right"
+                    android:background="@mipmap/ic_back" />
+        </LinearLayout>
+
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
