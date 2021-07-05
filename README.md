@@ -9,8 +9,6 @@ A Flutter plugin 🛠 to scanning. Ready for Android 🚀
 
 [github](https://github.com/leyan95/qrcode_scanner)
 
-![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan.gif)
-
 ## Permission：
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
@@ -57,7 +55,7 @@ String cameraScanResult = await scanner.scan();
 
 ## Demo App
 
-![qrscan.gif](./example/android/app/src/main/res/drawable/qr_scan_demo.gif)
+![qrscan.gif](https://github.com/wechat-program/album/blob/master/pic/cons/qr_scan_demo.gif)
 
 ## Select Bar-Code or QR-Code photos for analysis and Generating QR-Code 
 ```dart
