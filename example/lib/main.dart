@@ -295,7 +295,10 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future _scanBytes() async {
-    File file = await ImagePicker.pickImage(source: ImageSource.camera);
+    File file = await ImagePicker().getImage(source: ImageSource.camera).then((picked) {
+      if (picked == null) return null;
+      return File(picked.path);
+    });
     if (file == null) return;
     Uint8List bytes = file.readAsBytesSync();
     String barcode = await scanner.scanBytes(bytes);
