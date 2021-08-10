@@ -50,8 +50,8 @@ String cameraScanResult = await scanner.scan();
 
 ## TODO
 
--  [] Support IOS (example builds, but invoking scanner does not return)
--  [] Provide iOS setup documentation, if necessary
+-  [ ] Support IOS (example builds, but invoking scanner does not return)
+-  [ ] Provide iOS setup documentation, if necessary
 
 ## Demo App
 
