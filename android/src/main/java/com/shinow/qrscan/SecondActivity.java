@@ -4,29 +4,25 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.util.Log;
-import android.view.View;
-import android.widget.LinearLayout;
-
-import android.hardware.Sensor;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-
 import com.uuzuche.lib_zxing.activity.CaptureFragment;
 import com.uuzuche.lib_zxing.activity.CodeUtils;
-import android.widget.Toast;
 
 public class SecondActivity extends AppCompatActivity {
-    private static final String TAG = SecondActivity.class.getSimpleName();
 
     public static boolean isLightOpen = false;
-    private int REQUEST_IMAGE = 101;
+    private final int REQUEST_IMAGE = 101;
     private LinearLayout lightLayout;
     private LinearLayout backLayout;
     private LinearLayout photoLayout;
