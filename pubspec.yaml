@@ -6,7 +6,7 @@ homepage: https://github.com/leyan95/qrcode_scanner
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=1.12.13+hotfix.5 <2.1.0"
+  flutter: ">=1.12.13+hotfix.5"
 
 dependencies:
   flutter:
