@@ -15,7 +15,7 @@ dependencies:
   cupertino_icons: ^1.0.2
   image_gallery_saver: ^1.6.0
   image_picker: ^0.7.0
-  permission_handler: ^6.1.0
+  permission_handler: ^9.2.0
 
   qrscan:
     path: ../
