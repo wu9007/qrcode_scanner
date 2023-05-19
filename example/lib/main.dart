@@ -34,14 +34,14 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.grey[300],
+        backgroundColor: Colors.red,
         body: Builder(
           builder: (BuildContext context) {
             return ListView(
               children: <Widget>[
                 _qrCodeWidget(this.bytes, context),
                 Container(
-                  color: Colors.white,
+                  color: Colors.blue,
                   child: Column(
                     children: <Widget>[
                       TextField(
@@ -295,7 +295,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future _scanBytes() async {
-    File file = await ImagePicker().getImage(source: ImageSource.camera).then((picked) {
+    File file =
+        await ImagePicker().getImage(source: ImageSource.camera).then((picked) {
       if (picked == null) return null;
       return File(picked.path);
     });
