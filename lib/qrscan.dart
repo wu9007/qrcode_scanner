@@ -12,9 +12,14 @@ const String CameraStartFailed = 'CAMERA_START_FAILED';
 /// Another app already holds the camera.
 const String CameraInUse = 'CAMERA_IN_USE';
 
+/// Plugin has no Activity / cannot present the scanner.
+const String NoActivity = 'NO_ACTIVITY';
+
 const MethodChannel _channel = MethodChannel('qr_scan');
 
 /// Open the camera scanner and return the decoded string, or `null` if cancelled.
+///
+/// This does not open the gallery. Use [scanPhoto] for that.
 Future<String?> scan() async => await _channel.invokeMethod<String>('scan');
 
 /// Pick an image from the gallery and decode a barcode / QR code.
@@ -23,19 +28,25 @@ Future<String?> scanPhoto() async =>
 
 /// Decode a barcode / QR code from a local file path.
 Future<String?> scanPath(String path) async {
-  assert(path.isNotEmpty);
+  if (path.isEmpty) {
+    throw ArgumentError.value(path, 'path', 'must not be empty');
+  }
   return await _channel.invokeMethod<String>('scan_path', {'path': path});
 }
 
 /// Decode a barcode / QR code from image bytes.
 Future<String?> scanBytes(Uint8List uint8list) async {
-  assert(uint8list.isNotEmpty);
+  if (uint8list.isEmpty) {
+    throw ArgumentError.value(uint8list, 'uint8list', 'must not be empty');
+  }
   return await _channel.invokeMethod<String>('scan_bytes', {'bytes': uint8list});
 }
 
-/// Generate a QR code PNG as bytes.
+/// Generate a QR code PNG as bytes. Name is historical — this is QR only.
 Future<Uint8List> generateBarCode(String code) async {
-  assert(code.isNotEmpty);
+  if (code.isEmpty) {
+    throw ArgumentError.value(code, 'code', 'must not be empty');
+  }
   final Uint8List? data =
       await _channel.invokeMethod<Uint8List>('generate_barcode', {'code': code});
   if (data == null) {

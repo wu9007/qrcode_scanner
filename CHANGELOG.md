@@ -1,4 +1,16 @@
+## 1.1.0 - (2026/08/22)
+
+iOS is the same product as Android.
+
+- iOS album / path / bytes: QR first, EXIF orientation, invert, 90° retries, Codabar on iOS 15+
+- iOS scanner: viewfinder + scan line + torch + 取消. No in-scanner album
+- iOS `CAMERA_IN_USE` when another app holds the camera
+- Android `scan()` no longer has a gallery button — that is `scanPhoto()`
+- Dart rejects empty `scanPath` / `scanBytes` / `generateBarCode` (release too, not just `assert`)
+- `NoActivity` (`NO_ACTIVITY`) documented
+
 ## 1.0.2 - (2026/08/22)
+
 
 - Album / path / bytes: if the first pass misses, retry at 90° / 180° / 270° (phone photos stored sideways; vertical Code 128)
 - Decoder harness: 63 fixtures (field ISBT / 发血单 / 微信支付宝样式, JPEG, blur, dark, low contrast, noise, screenshot chrome, inverted, negatives)

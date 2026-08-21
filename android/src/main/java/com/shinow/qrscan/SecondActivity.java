@@ -6,12 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +18,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
@@ -34,7 +30,6 @@ import androidx.core.content.ContextCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.InputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -47,7 +42,6 @@ public class SecondActivity extends AppCompatActivity {
     public static boolean isLightOpen = false;
 
     private static final String TAG = "Qrscan";
-    private static final int REQUEST_IMAGE = 101;
     private static final int REQUEST_CAMERA = 202;
 
     private PreviewView previewView;
@@ -83,12 +77,6 @@ public class SecondActivity extends AppCompatActivity {
         }
 
         findViewById(R.id.scan_back).setOnClickListener(v -> cancel());
-        findViewById(R.id.choose_photo).setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("image/*");
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_IMAGE);
-        });
         lightButton.setOnClickListener(v -> toggleTorch());
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
@@ -238,34 +226,6 @@ public class SecondActivity extends AppCompatActivity {
             sensorManager.unregisterListener(sensorEventListener);
         }
         super.onPause();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE && resultCode == RESULT_OK && data != null
-                && data.getData() != null) {
-            String code = decodeUri(data.getData());
-            finishWith(code);
-        }
-    }
-
-    private String decodeUri(Uri uri) {
-        try (InputStream stream = getContentResolver().openInputStream(uri)) {
-            if (stream == null) {
-                return null;
-            }
-            Bitmap bitmap = BitmapFactory.decodeStream(stream);
-            try {
-                return QrDecoder.decodeBitmap(bitmap);
-            } finally {
-                if (bitmap != null) {
-                    bitmap.recycle();
-                }
-            }
-        } catch (Exception e) {
-            return null;
-        }
     }
 
     @Override

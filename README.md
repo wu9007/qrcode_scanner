@@ -11,7 +11,7 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.0.2
+  qrscan: ^1.1.0
 ```
 
 ```dart
@@ -58,7 +58,7 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 
 | Call | Returns |
 | --- | --- |
-| `scan()` | Decoded string, or `null` if the user cancels |
+| `scan()` | Decoded string, or `null` if the user cancels. Camera only — not the gallery |
 | `scanPhoto()` | System picker → decode, or `null` if cancelled |
 | `scanPath(path)` | Decode a local file |
 | `scanBytes(bytes)` | Decode image bytes |
@@ -75,6 +75,7 @@ Cancel is `null`. Real failures throw `PlatformException`:
 | `CameraAccessDenied` | `PERMISSION_NOT_GRANTED` | User denied camera |
 | `CameraStartFailed` | `CAMERA_START_FAILED` | No back camera / driver error |
 | `CameraInUse` | `CAMERA_IN_USE` | Another app already holds the camera |
+| `NoActivity` | `NO_ACTIVITY` | Plugin has no Activity / cannot present |
 
 ### Decoder
 
@@ -82,7 +83,7 @@ QR is tried first (with `TRY_HARDER`), then other 2D, then 1D. A dense QR is not
 
 Latin-1 QR (ISO-8859-1, no ECI) is not forced to UTF-8. Byte segments that are valid UTF-8 with high bits stay UTF-8 (typical Chinese QR). `generateBarCode` writes UTF-8.
 
-Decoder order is covered by `tool/decoder-harness` (63 fixtures in CI). Album photos that are stored rotated are retried at 90° steps.
+Decoder order is covered by `tool/decoder-harness` (63 fixtures in CI). Album photos that are stored rotated are retried at 90° steps on Android and iOS. iOS also honors EXIF orientation and inverts like Android.
 
 ## When **not** to use this
 

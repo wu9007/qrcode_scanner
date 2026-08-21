@@ -94,14 +94,26 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
                 break;
             case "scan_path":
                 String path = call.argument("path");
+                if (path == null || path.isEmpty()) {
+                    result.success(null);
+                    break;
+                }
                 result.success(QrDecoder.decodeFile(path));
                 break;
             case "scan_bytes":
                 byte[] bytes = call.argument("bytes");
+                if (bytes == null || bytes.length == 0) {
+                    result.success(null);
+                    break;
+                }
                 result.success(QrDecoder.decodeBytes(bytes));
                 break;
             case "generate_barcode":
                 String code = call.argument("code");
+                if (code == null || code.isEmpty()) {
+                    result.error("INVALID_ARGUMENT", "code is required", null);
+                    break;
+                }
                 try {
                     result.success(QrDecoder.encodeQr(code, 400));
                 } catch (Exception e) {

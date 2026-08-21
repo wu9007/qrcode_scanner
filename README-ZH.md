@@ -11,7 +11,7 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.0.2
+  qrscan: ^1.1.0
 ```
 
 ```dart
@@ -27,7 +27,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.0.2
+      ref: v1.1.0
 ```
 
 ### Android
@@ -67,7 +67,7 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 
 | 调用 | 返回 |
 | --- | --- |
-| `scan()` | 解码字符串；用户取消为 `null` |
+| `scan()` | 解码字符串；用户取消为 `null`。只开相机，不开相册 |
 | `scanPhoto()` | 系统相册选图再解码；取消为 `null` |
 | `scanPath(path)` | 本地文件 |
 | `scanBytes(bytes)` | 图片字节 |
@@ -84,6 +84,7 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 | `CameraAccessDenied` | `PERMISSION_NOT_GRANTED` | 用户拒绝相机 |
 | `CameraStartFailed` | `CAMERA_START_FAILED` | 没有后置摄像头 / 驱动失败 |
 | `CameraInUse` | `CAMERA_IN_USE` | 别的 App 占用着相机 |
+| `NoActivity` | `NO_ACTIVITY` | 没有 Activity / 弹不出扫描页 |
 
 ### 解码
 
@@ -91,7 +92,7 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 
 Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位且合法的 UTF-8 字节仍按 UTF-8（国内常见）。`generateBarCode` 按 UTF-8 写。
 
-解码顺序由 `tool/decoder-harness` 的 63 条样本在 CI 里跑。相册里拍歪/系统存成横图的，按 90° 重试。
+解码顺序由 `tool/decoder-harness` 的 63 条样本在 CI 里跑。相册里拍歪/系统存成横图的，Android 和 iOS 都按 90° 重试。iOS 还认 EXIF 方向，反色重试和 Android 一样。
 
 ## 什么时候不要用
 
