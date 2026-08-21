@@ -160,9 +160,10 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
                 }
                 finishWithSuccess(value);
             } else if (resultCode == Activity.RESULT_CANCELED) {
-                String error = intent != null ? intent.getStringExtra("ERROR_CODE") : null;
+                String error = intent != null ? intent.getStringExtra(SecondActivity.EXTRA_ERROR) : null;
+                String message = intent != null ? intent.getStringExtra(SecondActivity.EXTRA_ERROR_MESSAGE) : null;
                 if (error != null) {
-                    finishWithError(error, null);
+                    finishWithError(error, message);
                 } else {
                     finishWithSuccess(null);
                 }
