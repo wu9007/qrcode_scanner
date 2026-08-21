@@ -5,22 +5,19 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Pub](https://img.shields.io/pub/v/qrscan.svg)](https://pub.dev/packages/qrscan)
 
-一次性扫码插件：**打开相机，扫到一条，关掉，返回字符串。** 顺带相册 / 路径 / 字节识码，以及生成二维码 PNG。
+打开相机。扫到一条。字符串回来。关掉。
 
-**不是**页面里嵌的预览控件。要扫码窗、叠加层、手电 API、连续扫，用 [`mobile_scanner`](https://pub.dev/packages/mobile_scanner)——那条赛道已经结束了。
-
-**不是**硬件枪。键盘槽入走 `TextField`。工业 PDA 广播走 [`pda_scanner`](https://github.com/wu9007/pda_scanner)。别为枪开相机。
-
-- **Android**：CameraX 1.4 + ZXing 3.5.3（QR、Code 128/39/93、EAN、UPC、ITF、Data Matrix、PDF417、Aztec、Codabar）
-- **iOS**：AVFoundation + Vision
-- Dart 3 / Flutter 3.10+ / Android embedding v2
-- 公开 Dart API 仍是 0.3.x 那五个函数
-
-## 安装
+![qrscan](pictures/qrscan.gif)
 
 ```yaml
 dependencies:
-  qrscan: ^1.0.0
+  qrscan: ^1.0.1
+```
+
+```dart
+import 'package:qrscan/qrscan.dart' as scanner;
+
+String? code = await scanner.scan();
 ```
 
 Dart 3 / Flutter 3.10+。钉某个提交：
@@ -30,7 +27,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.0.0
+      ref: v1.0.1
 ```
 
 ### Android

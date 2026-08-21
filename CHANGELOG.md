@@ -1,4 +1,10 @@
+## 1.0.1 - (2026/08/22)
+
+- README demo GIF again: tap Scan, first decode, string back
+- Example app is one screen, one primary button
+
 ## 1.0.0 - (2026/08/22)
+
 
 API freeze. Decoder covered by a 30-case JVM harness that uses the same format order as `QrDecoder`.
 

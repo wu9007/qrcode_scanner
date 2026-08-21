@@ -1,7 +1,7 @@
 name: qrscan_example
-description: Demonstrates how to use the qrscan plugin.
+description: One screen. Scan. String back.
 publish_to: "none"
-version: 0.4.0
+version: 1.0.0
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  image_picker: ^1.1.2
   qrscan:
     path: ../
 
@@ -21,7 +20,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - images/generate_qrcode.png
-    - images/scanner.png
-    - images/albums.png

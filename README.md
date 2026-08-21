@@ -5,45 +5,37 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Pub](https://img.shields.io/pub/v/qrscan.svg)](https://pub.dev/packages/qrscan)
 
-One-shot Flutter QR / barcode plugin: **open camera, first decode, return a string, close.** Also album / path / bytes decode, and QR PNG generation.
+Open camera. First decode. String back. Close.
 
-This is **not** an embedded camera widget. If you need a preview, scan window, overlay, torch API, or continuous scan, use [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) — that race is already over.
+![qrscan](pictures/qrscan.gif)
 
-This is **not** a hardware gun. Keyboard wedge → a `TextField`. OEM broadcast PDA → [`pda_scanner`](https://github.com/wu9007/pda_scanner). Do not open the camera for those.
+```yaml
+dependencies:
+  qrscan: ^1.0.1
+```
 
-- **Android** CameraX 1.4 + ZXing 3.5.3 (QR, Code 128/39/93, EAN, UPC, ITF, Data Matrix, PDF417, Aztec, Codabar)
+```dart
+import 'package:qrscan/qrscan.dart' as scanner;
+
+String? code = await scanner.scan();
+```
+
+This is **not** an embedded camera widget. Preview / scan window / overlay / torch API / continuous scan → [`mobile_scanner`](https://pub.dev/packages/mobile_scanner).
+
+This is **not** a hardware gun. Keyboard wedge → a `TextField`. OEM broadcast PDA → [`pda_scanner`](https://github.com/wu9007/pda_scanner).
+
+- **Android** CameraX 1.4 + ZXing 3.5.3
 - **iOS** AVFoundation + Vision
 - Dart 3 / Flutter 3.10+ / Android embedding v2
-- Public Dart API is the same five functions as 0.3.x
-
-## Install
-
-```yaml
-dependencies:
-  qrscan: ^1.0.0
-```
-
-Dart 3 / Flutter 3.10+. Git pin if you need a commit:
-
-```yaml
-dependencies:
-  qrscan:
-    git:
-      url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.0.0
-```
+- Five functions: `scan` / `scanPhoto` / `scanPath` / `scanBytes` / `generateBarCode`
 
 ### Android
 
-`minSdk` **21**. Camera permission is requested when `scan()` runs, not at install. Do **not** add storage permissions — album picking uses the system picker.
+`minSdk` **21**. Camera permission is requested when `scan()` runs. Do **not** add storage permissions.
 
-Host `MainActivity` must be embedding v2 (`FlutterActivity`).
-
-The scanner activity **follows the device orientation**. It does not lock portrait. If the user has system rotation lock on, the scanner stays put.
+Host `MainActivity` must be embedding v2 (`FlutterActivity`). The scanner follows device orientation.
 
 ### iOS
-
-Add to `ios/Runner/Info.plist`:
 
 ```xml
 <key>NSCameraUsageDescription</key>
@@ -52,15 +44,11 @@ Add to `ios/Runner/Info.plist`:
 <string>Read a code from a photo</string>
 ```
 
-Minimum iOS 12.
-
-Landscape on iOS only works if the host app already lists landscape in `UISupportedInterfaceOrientations`. A plugin cannot override that plist.
+Minimum iOS 12. Landscape only if the host already lists it in `UISupportedInterfaceOrientations`.
 
 ## Usage
 
 ```dart
-import 'package:qrscan/qrscan.dart' as scanner;
-
 String? cameraScanResult = await scanner.scan();
 String? photoScanResult = await scanner.scanPhoto();
 String? fromPath = await scanner.scanPath(path);
