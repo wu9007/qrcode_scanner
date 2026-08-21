@@ -145,6 +145,8 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
   private let session = AVCaptureSession()
   private var didFinish = false
   private let sessionQueue = DispatchQueue(label: "com.shinow.qrscan.session")
+  private var previewLayer: AVCaptureVideoPreviewLayer?
+  private var videoConnection: AVCaptureConnection?
 
   init(onResult: @escaping (String?) -> Void) {
     self.onResult = onResult
@@ -155,6 +157,10 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
     fatalError("init(coder:) has not been implemented")
   }
 
+  override var shouldAutorotate: Bool { true }
+
+  override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .all }
+
   override func viewDidLoad() {
     super.viewDidLoad()
     view.backgroundColor = .black
@@ -164,6 +170,7 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
 
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
+    updateVideoOrientation()
     sessionQueue.async { [weak self] in
       self?.session.startRunning()
     }
@@ -174,6 +181,20 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
       self?.session.stopRunning()
     }
     super.viewWillDisappear(animated)
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    previewLayer?.frame = view.bounds
+    updateVideoOrientation()
+  }
+
+  override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+    super.viewWillTransition(to: size, with: coordinator)
+    coordinator.animate(alongsideTransition: { _ in
+      self.previewLayer?.frame = CGRect(origin: .zero, size: size)
+      self.updateVideoOrientation()
+    })
   }
 
   private func configureSession() {
@@ -191,17 +212,45 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
     if session.canAddOutput(output) {
       session.addOutput(output)
     }
+    videoConnection = output.connection(with: .video)
     session.commitConfiguration()
 
     let preview = AVCaptureVideoPreviewLayer(session: session)
     preview.videoGravity = .resizeAspectFill
     preview.frame = view.bounds
     view.layer.insertSublayer(preview, at: 0)
+    previewLayer = preview
+    updateVideoOrientation()
   }
 
-  override func viewDidLayoutSubviews() {
-    super.viewDidLayoutSubviews()
-    (view.layer.sublayers?.first as? AVCaptureVideoPreviewLayer)?.frame = view.bounds
+  private func updateVideoOrientation() {
+    let orientation = Self.captureOrientation()
+    if let connection = previewLayer?.connection, connection.isVideoOrientationSupported {
+      connection.videoOrientation = orientation
+    }
+    if let connection = videoConnection, connection.isVideoOrientationSupported {
+      connection.videoOrientation = orientation
+    }
+  }
+
+  /// UIInterfaceOrientation landscapeLeft/Right is inverted vs AVCaptureVideoOrientation.
+  private static func captureOrientation() -> AVCaptureVideoOrientation {
+    let interface: UIInterfaceOrientation
+    if let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first {
+      interface = scene.interfaceOrientation
+    } else {
+      interface = .portrait
+    }
+    switch interface {
+    case .landscapeLeft:
+      return .landscapeRight
+    case .landscapeRight:
+      return .landscapeLeft
+    case .portraitUpsideDown:
+      return .portraitUpsideDown
+    default:
+      return .portrait
+    }
   }
 
   private func addChrome() {
@@ -234,7 +283,7 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
       }
       self.complete(payload)
     }
-    try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
+    try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:]).perform([request])
   }
 
   private func complete(_ value: String?) {
