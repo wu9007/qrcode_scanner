@@ -41,6 +41,8 @@ dependencies:
 
 Host `MainActivity` must be embedding v2 (`FlutterActivity`).
 
+The scanner activity **follows the device orientation**. It does not lock portrait. If the user has system rotation lock on, the scanner stays put.
+
 ### iOS
 
 Add to `ios/Runner/Info.plist`:
@@ -53,6 +55,8 @@ Add to `ios/Runner/Info.plist`:
 ```
 
 Minimum iOS 12.
+
+Landscape on iOS only works if the host app already lists landscape in `UISupportedInterfaceOrientations`. A plugin cannot override that plist.
 
 ## Usage
 
@@ -98,6 +102,7 @@ Three mutually exclusive paths: **camera one-shot** (this plugin) · **OEM broad
 | Storage permissions | Camera + system photo picker |
 | SDK `<3.0.0` | Dart 3 / Flutter 3.10+ |
 | Torch crash on devices with no flash | CameraX `enableTorch`, toast if unavailable |
+| Scanner locked `portrait` (tablets / landscape broken) | Follows device rotation; overlay recenters |
 
 Public Dart API is unchanged.
 

@@ -9,7 +9,7 @@
 
 **不是**页面里嵌的预览控件。要扫码窗、叠加层、手电 API、连续扫，用 [`mobile_scanner`](https://pub.dev/packages/mobile_scanner)——那条赛道已经结束了。
 
-**不是**硬件枪。键盘槳入走 `TextField`。工业 PDA 广播走 [`pda_scanner`](https://github.com/wu9007/pda_scanner)。别为枪开相机。
+**不是**硬件枪。键盘槽入走 `TextField`。工业 PDA 广播走 [`pda_scanner`](https://github.com/wu9007/pda_scanner)。别为枪开相机。
 
 - **Android**：CameraX 1.4 + ZXing 3.5.3（QR、Code 128/39/93、EAN、UPC、ITF、Data Matrix、PDF417、Aztec、Codabar）
 - **iOS**：AVFoundation + Vision
@@ -41,6 +41,8 @@ dependencies:
 
 宿主 `MainActivity` 必须是 embedding v2（`FlutterActivity`）。
 
+扫码页**跟设备方向**，不再锁死竖屏。用户开了系统旋转锁就停在当前方向。
+
 ### iOS
 
 在 `ios/Runner/Info.plist` 增加：
@@ -53,6 +55,8 @@ dependencies:
 ```
 
 最低 iOS 12。
+
+iOS 横屏只有宿主 App 的 `UISupportedInterfaceOrientations` 里包含横屏才能转。插件改不了这份 plist。
 
 ## 用法
 
@@ -84,9 +88,9 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 | --- | --- |
 | 页面内预览 / 扫码窗 / 叠加层 / 连续扫 / Web / 桌面 | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) |
 | 工业 PDA 扳机走 Intent 广播 | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
-| 枪设成键盘槳入（HID） | 任何 `TextField`。不装插件 |
+| 枪设成键盘槽入（HID） | 任何 `TextField`。不装插件 |
 
-三条路互斥：**相机扫一下**（本插件）· **厂商广播**（`pda_scanner`）· **键盘槳入**（什么都不用）。混用是现场「插件坏了」的第一原因。
+三条路互斥：**相机扫一下**（本插件）· **厂商广播**（`pda_scanner`）· **键盘槽入**（什么都不用）。混用是现场「插件坏了」的第一原因。
 
 ## 0.4 复活了什么
 
@@ -98,6 +102,7 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 | 乱要存储权限 | 相机 + 系统选择器 |
 | SDK `<3.0.0` | Dart 3 / Flutter 3.10+ |
 | 没手电的设备点手电崩溃 | CameraX `enableTorch`，没有就 toast |
+| 扫码页锁死竖屏（平板 / 横屏坏掉） | 跟设备旋转；叠加框重新居中 |
 
 公开 Dart API 没变。
 
