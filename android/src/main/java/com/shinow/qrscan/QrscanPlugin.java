@@ -1,19 +1,18 @@
 package com.shinow.qrscan;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import com.uuzuche.lib_zxing.activity.CodeUtils;
-import com.uuzuche.lib_zxing.activity.ZXingLibrary;
-
-import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.embedding.engine.plugins.activity.ActivityAware;
@@ -23,101 +22,91 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-import io.flutter.plugin.common.PluginRegistry.Registrar;
 
-import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_SUCCESS;
-import static com.uuzuche.lib_zxing.activity.CodeUtils.RESULT_TYPE;
+public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler,
+        PluginRegistry.ActivityResultListener, PluginRegistry.RequestPermissionsResultListener {
 
-public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHandler, PluginRegistry.ActivityResultListener {
-
-    private final static String TAG = "QrscanPlugin";
-
-    private Result result = null;
-    private Activity activity;
-    private final int REQUEST_CODE = 100;
-    private final int REQUEST_IMAGE = 101;
-
-    @Deprecated
-    public static void registerWith(Registrar registrar) {
-        QrscanPlugin plugin = new QrscanPlugin();
-        plugin.activity = registrar.activity();
-        plugin.channel = new MethodChannel(registrar.messenger(), "qr_scan");
-        plugin.channel.setMethodCallHandler(plugin);
-        registrar.addActivityResultListener(plugin);
-
-        ZXingLibrary.initDisplayOpinion(registrar.activity());
-    }
+    private static final int REQUEST_SCAN = 100;
+    private static final int REQUEST_IMAGE = 101;
+    private static final int REQUEST_CAMERA_PERM = 201;
 
     private MethodChannel channel;
+    private Activity activity;
+    private ActivityPluginBinding activityBinding;
+    private Result pendingResult;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
-        Log.i(TAG, "onAttachedToEngine: ");
         channel = new MethodChannel(binding.getBinaryMessenger(), "qr_scan");
         channel.setMethodCallHandler(this);
     }
 
     @Override
     public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
-        channel.setMethodCallHandler(null);
-        channel = null;
-        Log.i(TAG, "onDetachedFromEngine: ");
+        if (channel != null) {
+            channel.setMethodCallHandler(null);
+            channel = null;
+        }
     }
 
     @Override
     public void onAttachedToActivity(@NonNull ActivityPluginBinding binding) {
-        Log.i(TAG, "onAttachedToActivity: ");
         activity = binding.getActivity();
+        activityBinding = binding;
         binding.addActivityResultListener(this);
-        ZXingLibrary.initDisplayOpinion(activity);
-    }
-
-    @Override
-    public void onDetachedFromActivity() {
-        activity = null;
-        Log.i(TAG, "onDetachedFromActivity: ");
+        binding.addRequestPermissionsResultListener(this);
     }
 
     @Override
     public void onDetachedFromActivityForConfigChanges() {
         onDetachedFromActivity();
-        Log.i(TAG, "onDetachedFromActivityForConfigChanges: ");
     }
 
     @Override
     public void onReattachedToActivityForConfigChanges(@NonNull ActivityPluginBinding binding) {
-        Log.i(TAG, "onReattachedToActivityForConfigChanges: ");
         onAttachedToActivity(binding);
     }
 
     @Override
+    public void onDetachedFromActivity() {
+        if (activityBinding != null) {
+            activityBinding.removeActivityResultListener(this);
+            activityBinding.removeRequestPermissionsResultListener(this);
+            activityBinding = null;
+        }
+        activity = null;
+    }
+
+    @Override
     public void onMethodCall(MethodCall call, @NonNull Result result) {
-        Log.i(TAG, "onMethodCall: " + call.method);
+        if (activity == null) {
+            result.error("NO_ACTIVITY", "Plugin is not attached to an activity", null);
+            return;
+        }
         switch (call.method) {
             case "scan":
-                Log.i(TAG, "scan");
-                this.result = result;
-                showBarcodeView();
+                pendingResult = result;
+                launchScanner();
                 break;
             case "scan_photo":
-                this.result = result;
-                choosePhotos();
+                pendingResult = result;
+                choosePhoto();
                 break;
             case "scan_path":
-                this.result = result;
                 String path = call.argument("path");
-                CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, this.activity.getIntent());
-                CodeUtils.analyzeBitmap(path, analyzeCallback);
+                result.success(QrDecoder.decodeFile(path));
                 break;
             case "scan_bytes":
-                this.result = result;
                 byte[] bytes = call.argument("bytes");
-                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes != null ? bytes.length : 0);
-                CodeUtils.analyzeBitmap(bitmap, new CustomAnalyzeCallback(this.result, this.activity.getIntent()));
+                result.success(QrDecoder.decodeBytes(bytes));
                 break;
             case "generate_barcode":
-                this.result = result;
-                generateQrCode(call);
+                String code = call.argument("code");
+                try {
+                    result.success(QrDecoder.encodeQr(code, 400));
+                } catch (Exception e) {
+                    result.error("GENERATE_FAILED", e.getMessage(), null);
+                }
                 break;
             default:
                 result.notImplemented();
@@ -125,69 +114,103 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         }
     }
 
-    private void showBarcodeView() {
+    private void launchScanner() {
+        if (ContextCompat.checkSelfPermission(activity, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERM);
+            return;
+        }
         Intent intent = new Intent(activity, SecondActivity.class);
-        activity.startActivityForResult(intent, REQUEST_CODE);
+        activity.startActivityForResult(intent, REQUEST_SCAN);
     }
 
-    private void choosePhotos() {
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_PICK);
+    private void choosePhoto() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        activity.startActivityForResult(intent, REQUEST_IMAGE);
-    }
-
-    private void generateQrCode(MethodCall call) {
-        String code = call.argument("code");
-        Bitmap bitmap = CodeUtils.createImage(code, 400, 400, null);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
-        byte[] datas = baos.toByteArray();
-        this.result.success(datas);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        activity.startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_IMAGE);
     }
 
     @Override
-    public boolean onActivityResult(int code, int resultCode, Intent intent) {
-        if (code == REQUEST_CODE) {
+    public boolean onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                              @NonNull int[] grantResults) {
+        if (requestCode != REQUEST_CAMERA_PERM) {
+            return false;
+        }
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            Intent intent = new Intent(activity, SecondActivity.class);
+            activity.startActivityForResult(intent, REQUEST_SCAN);
+        } else {
+            finishWithError("PERMISSION_NOT_GRANTED", "Camera permission denied");
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onActivityResult(int requestCode, int resultCode, Intent intent) {
+        if (requestCode == REQUEST_SCAN) {
             if (resultCode == Activity.RESULT_OK && intent != null) {
-                Bundle secondBundle = intent.getBundleExtra("secondBundle");
-                if (secondBundle != null) {
-                    try {
-                        CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, intent);
-                        CodeUtils.analyzeBitmap(secondBundle.getString("path"), analyzeCallback);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                String value = intent.getStringExtra(SecondActivity.EXTRA_RESULT);
+                if (value == null) {
+                    String path = intent.getStringExtra(SecondActivity.EXTRA_PATH);
+                    if (path != null) {
+                        value = QrDecoder.decodeFile(path);
                     }
+                }
+                finishWithSuccess(value);
+            } else if (resultCode == Activity.RESULT_CANCELED) {
+                String error = intent != null ? intent.getStringExtra("ERROR_CODE") : null;
+                if (error != null) {
+                    finishWithError(error, null);
                 } else {
-                    Bundle bundle = intent.getExtras();
-                    if (bundle != null) {
-                        if (bundle.getInt(RESULT_TYPE) == RESULT_SUCCESS) {
-                            String barcode = bundle.getString(CodeUtils.RESULT_STRING);
-                            this.result.success(barcode);
-                        } else {
-                            this.result.success(null);
-                        }
-                    }
+                    finishWithSuccess(null);
                 }
             } else {
-                String errorCode = intent != null ? intent.getStringExtra("ERROR_CODE") : null;
-                if (errorCode != null) {
-                    this.result.error(errorCode, null, null);
-                }
+                finishWithSuccess(null);
             }
             return true;
-        } else if (code == REQUEST_IMAGE) {
-            if (intent != null) {
-                Uri uri = intent.getData();
-                try {
-                    CodeUtils.AnalyzeCallback analyzeCallback = new CustomAnalyzeCallback(this.result, intent);
-                    CodeUtils.analyzeBitmap(ImageUtil.getImageAbsolutePath(activity, uri), analyzeCallback);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+        }
+        if (requestCode == REQUEST_IMAGE) {
+            if (resultCode == Activity.RESULT_OK && intent != null && intent.getData() != null) {
+                finishWithSuccess(decodeUri(intent.getData()));
+            } else {
+                finishWithSuccess(null);
             }
             return true;
         }
         return false;
+    }
+
+    private String decodeUri(Uri uri) {
+        try (InputStream stream = activity.getContentResolver().openInputStream(uri)) {
+            if (stream == null) {
+                return null;
+            }
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            try {
+                return QrDecoder.decodeBitmap(bitmap);
+            } finally {
+                if (bitmap != null) {
+                    bitmap.recycle();
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void finishWithSuccess(String value) {
+        if (pendingResult != null) {
+            pendingResult.success(value);
+            pendingResult = null;
+        }
+    }
+
+    private void finishWithError(String code, String message) {
+        if (pendingResult != null) {
+            pendingResult.error(code, message, null);
+            pendingResult = null;
+        }
     }
 }

@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [master, main, revive/**]
+  pull_request:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter --version
+      - run: flutter pub get
+      - run: dart analyze --fatal-infos

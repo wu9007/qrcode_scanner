@@ -1,97 +1,65 @@
 Language: [English](README.md) | [中文简体](README-ZH.md)
 
-# QR Code Scanner
-  
-[![License][license-image]][license-url] 
-[![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
+# qrscan
 
-A Flutter plugin 🛠 to scanning. Ready for Android 🚀
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Pub](https://img.shields.io/pub/v/qrscan.svg)](https://pub.dev/packages/qrscan)
 
-[github](https://github.com/leyan95/qrcode_scanner)
+Flutter plugin for scanning QR codes and barcodes, and generating QR images.
 
-## Permission：
-```xml
-<uses-permission android:name="android.permission.CAMERA" />
-<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-```
+- **Android** CameraX + ZXing (QR, Code 128/39/93, EAN, UPC, ITF, Data Matrix, PDF417, Aztec, Codabar)
+- **iOS** AVFoundation + Vision
+- Dart 3 / Flutter 3.10+ / Android embedding v2
 
-## Installation
-
-Add this to your package's pubspec.yaml file:
+## Install
 
 ```yaml
 dependencies:
- qrscan: ^0.3.3
+  qrscan: ^0.4.0
 ```
 
-## Scan Usage example
+### Android
+
+`minSdk` **21**. Camera permission is requested at runtime. Do **not** add storage permissions — album picking uses the system picker.
+
+### iOS
+
+Add to `ios/Runner/Info.plist`:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>Scan QR codes and barcodes</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Read a code from a photo</string>
+```
+
+Minimum iOS 12.
+
+## Usage
+
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
-String cameraScanResult = await scanner.scan();
+String? cameraScanResult = await scanner.scan();
+String? photoScanResult = await scanner.scanPhoto();
+String? fromPath = await scanner.scanPath(path);
+String? fromBytes = await scanner.scanBytes(bytes);
+Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcode_scanner');
 ```
 
-## Supported
+`scan()` returns `null` when the user cancels. Camera denial throws a `PlatformException` with code `PERMISSION_NOT_GRANTED`.
 
--  [x] Scan BR-CODE
--  [x] Scan QR-CODE
--  [x] Control the flash while scanning
--  [x] Apply for camera privileges
--  [x] Scanning BR-CODE or QR-CODE in albums
--  [x] Parse to code string with uint8list
--  [x] Scanning the image of the specified path
--  [x] Display the switch button of the flashlight according to the light intensity
--  [x] Generate QR-CODE
+## 0.3 → 0.4
 
-## Features
+| Before | After |
+| --- | --- |
+| Android only, embedding v1 leftovers | Android + iOS, embedding v2 |
+| `com.github.leyan95:android-zxingLibrary` (JitPack, often missing) | `com.google.zxing:core` + CameraX |
+| Storage permissions | Camera + system photo picker |
+| SDK `<3.0.0` | Dart 3 |
 
--  Generate BR-CODE
-
-## TODO
-
--  [] Support IOS (example builds, but invoking scanner does not return)
--  [] Provide iOS setup documentation, if necessary
-
-## Demo App
-
-![qrscan.gif](https://github.com/wechat-program/album/blob/master/pic/cons/qr_scan_demo.gif)
-
-## Select Bar-Code or QR-Code photos for analysis and Generating QR-Code 
-```dart
-import 'package:qrscan/qrscan.dart' as scanner;
-
-// Select Bar-Code or QR-Code photos for analysis
-String photoScanResult = await scanner.scanPhoto();
-
-// Generating QR-Code
-Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
-
-// Scanning the image of the specified path
-String barcode = await scanner.scanPath(path);
-
-// Parse to code string with uint8list
-File file = await ImagePicker.pickImage(source: ImageSource.camera);
-Uint8List bytes = file.readAsBytesSync();
-String barcode = await scanner.scanBytes(uint8list);
-```
-
-## Contribute
-
-We would ❤️ to see your contribution!
+Public Dart API is unchanged.
 
 ## License
 
-Distributed under the MIT license. See ``LICENSE`` for more information.
-
-## About
-
-Created by Shusheng.
-
-[license-image]: https://img.shields.io/badge/License-MIT-blue.svg
-[license-url]: LICENSE
-
-
-## Thanks
-
-- <a href="https://www.jetbrains.com/?from=spring-boot-demo"><img src="http://static.xkcoding.com/spring-boot-demo/064312.jpg" width="100px" alt="jetbrains">**Thanks JetBrains Offer Open Source Free License**</a>
+MIT. Created by Shusheng.

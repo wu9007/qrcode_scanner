@@ -1,3 +1,6 @@
 <resources>
-    <string name="title_activity_three">ThreeActivity</string>
+    <string name="scan_title">Scan</string>
+    <string name="back">Back</string>
+    <string name="album">Album</string>
+    <string name="torch">Torch</string>
 </resources>

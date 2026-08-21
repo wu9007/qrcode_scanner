@@ -1,31 +1,54 @@
 package com.shinow.qrscan;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.camera.core.Camera;
+import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageAnalysis;
+import androidx.camera.core.Preview;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
-import com.uuzuche.lib_zxing.activity.CaptureFragment;
-import com.uuzuche.lib_zxing.activity.CodeUtils;
+import com.google.common.util.concurrent.ListenableFuture;
+
+import java.io.InputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class SecondActivity extends AppCompatActivity {
 
+    public static final String EXTRA_RESULT = "qrscan_result";
+    public static final String EXTRA_PATH = "path";
     public static boolean isLightOpen = false;
-    private final int REQUEST_IMAGE = 101;
-    private LinearLayout lightLayout;
-    private LinearLayout backLayout;
-    private LinearLayout photoLayout;
+
+    private static final int REQUEST_IMAGE = 101;
+    private static final int REQUEST_CAMERA = 202;
+
+    private PreviewView previewView;
+    private ScanOverlayView overlay;
+    private ImageView lightButton;
+    private Camera camera;
+    private ExecutorService cameraExecutor;
+    private volatile boolean handled = false;
     private SensorManager sensorManager;
     private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
@@ -33,127 +56,173 @@ public class SecondActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        isLightOpen = false;
         setContentView(R.layout.activity_second);
-        CaptureFragment captureFragment = new CaptureFragment();
-        CodeUtils.setFragmentArgs(captureFragment, R.layout.my_camera);
-        captureFragment.setAnalyzeCallback(analyzeCallback);
-        getSupportFragmentManager().beginTransaction().replace(R.id.fl_my_container, captureFragment).commit();
-
-        lightLayout = findViewById(R.id.scan_light);
-        backLayout = findViewById(R.id.scan_back);
-        photoLayout = findViewById(R.id.choose_photo);
+        previewView = findViewById(R.id.preview_view);
+        overlay = findViewById(R.id.scan_overlay);
+        lightButton = findViewById(R.id.scan_light);
+        cameraExecutor = Executors.newSingleThreadExecutor();
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        sensorEventListener = new LightSensorEventListener(lightLayout);
+        if (sensorManager != null) {
+            lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+            sensorEventListener = new LightSensorEventListener(lightButton);
+        }
 
-        initView();
+        findViewById(R.id.scan_back).setOnClickListener(v -> cancel());
+        findViewById(R.id.choose_photo).setOnClickListener(v -> {
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(Intent.createChooser(intent, "Select image"), REQUEST_IMAGE);
+        });
+        lightButton.setOnClickListener(v -> toggleTorch());
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA);
+        } else {
+            startCamera();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                startCamera();
+            } else {
+                Intent data = new Intent();
+                data.putExtra("ERROR_CODE", "PERMISSION_NOT_GRANTED");
+                setResult(Activity.RESULT_CANCELED, data);
+                finish();
+            }
+        }
+    }
+
+    private void startCamera() {
+        ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
+        future.addListener(() -> {
+            try {
+                ProcessCameraProvider provider = future.get();
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                ImageAnalysis analysis = new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .build();
+                analysis.setAnalyzer(cameraExecutor, image -> {
+                    if (handled) {
+                        image.close();
+                        return;
+                    }
+                    String code = QrDecoder.decodeImageProxy(image);
+                    image.close();
+                    if (code != null && !handled) {
+                        handled = true;
+                        runOnUiThread(() -> finishWith(code));
+                    }
+                });
+
+                CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
+                provider.unbindAll();
+                camera = provider.bindToLifecycle(this, selector, preview, analysis);
+            } catch (Exception e) {
+                Toast.makeText(this, "Camera start failed", Toast.LENGTH_SHORT).show();
+            }
+        }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void toggleTorch() {
+        if (camera == null || camera.getCameraInfo().getTorchState() == null) {
+            Toast.makeText(this, "Can't use light", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            isLightOpen = !isLightOpen;
+            camera.getCameraControl().enableTorch(isLightOpen);
+        } catch (Exception e) {
+            isLightOpen = false;
+            Toast.makeText(this, "Can't use light", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     protected void onResume() {
-        // System.out.println("---------------------|||||||||||||---onResume---|||||||||||-------------------------");
         super.onResume();
-        if (lightSensor != null) {
-            sensorManager.registerListener(sensorEventListener, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        if (overlay != null) {
+            overlay.start();
+        }
+        if (sensorManager != null && lightSensor != null && sensorEventListener != null) {
+            sensorManager.registerListener(sensorEventListener, lightSensor,
+                    SensorManager.SENSOR_DELAY_NORMAL);
         }
     }
 
     @Override
     protected void onPause() {
-        // System.out.println("---------------------|||||||||||||---onPause---|||||||||||-------------------------");
-        sensorManager.unregisterListener(sensorEventListener);
+        if (overlay != null) {
+            overlay.stop();
+        }
+        if (sensorManager != null && sensorEventListener != null) {
+            sensorManager.unregisterListener(sensorEventListener);
+        }
         super.onPause();
-    }
-
-    private void initView() {
-        lightLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isLightOpen) {
-                    try {
-                        CodeUtils.isLightEnable(true);
-                        isLightOpen = true;
-                    } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Can't use light", Toast.LENGTH_SHORT).show();
-                    }
-                } else {
-                    try {
-                        CodeUtils.isLightEnable(false);
-                        isLightOpen = false;
-                    } catch (Exception e) {
-                        Toast.makeText(getApplicationContext(), "Can't use light", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-        backLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SecondActivity.this.finish();
-            }
-        });
-        photoLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent();
-                intent.setAction(Intent.ACTION_PICK);
-                intent.setType("image/*");
-                SecondActivity.this.startActivityForResult(intent, REQUEST_IMAGE);
-            }
-        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE) {
-            if (data != null) {
-                Uri uri = data.getData();
-                String path = ImageUtil.getImageAbsolutePath(SecondActivity.this, uri);
-                Intent intent = new Intent();
-                intent.setClass(SecondActivity.this, QrscanPlugin.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("path", path);
-                intent.putExtra("secondBundle", bundle);
-                setResult(Activity.RESULT_OK, intent);
-                SecondActivity.this.finish();
+        if (requestCode == REQUEST_IMAGE && resultCode == RESULT_OK && data != null
+                && data.getData() != null) {
+            String code = decodeUri(data.getData());
+            finishWith(code);
+        }
+    }
+
+    private String decodeUri(Uri uri) {
+        try (InputStream stream = getContentResolver().openInputStream(uri)) {
+            if (stream == null) {
+                return null;
             }
+            Bitmap bitmap = BitmapFactory.decodeStream(stream);
+            try {
+                return QrDecoder.decodeBitmap(bitmap);
+            } finally {
+                if (bitmap != null) {
+                    bitmap.recycle();
+                }
+            }
+        } catch (Exception e) {
+            return null;
         }
     }
 
     @Override
     public void onBackPressed() {
-        Intent resultIntent = new Intent();
-        Bundle bundle = new Bundle();
-        bundle.putInt(CodeUtils.RESULT_TYPE, CodeUtils.RESULT_FAILED);
-        resultIntent.putExtras(bundle);
-        SecondActivity.this.setResult(RESULT_OK, resultIntent);
-        SecondActivity.this.finish();
+        cancel();
     }
 
-    private CodeUtils.AnalyzeCallback analyzeCallback = new CodeUtils.AnalyzeCallback() {
-        @Override
-        public void onAnalyzeSuccess(Bitmap mBitmap, String result) {
-            Intent resultIntent = new Intent();
-            Bundle bundle = new Bundle();
-            bundle.putInt(CodeUtils.RESULT_TYPE, CodeUtils.RESULT_SUCCESS);
-            bundle.putString(CodeUtils.RESULT_STRING, result);
-            resultIntent.putExtras(bundle);
-            SecondActivity.this.setResult(RESULT_OK, resultIntent);
-            SecondActivity.this.finish();
-        }
+    private void cancel() {
+        setResult(Activity.RESULT_CANCELED);
+        finish();
+    }
 
-        @Override
-        public void onAnalyzeFailed() {
-            Intent resultIntent = new Intent();
-            Bundle bundle = new Bundle();
-            bundle.putInt(CodeUtils.RESULT_TYPE, CodeUtils.RESULT_FAILED);
-            bundle.putString(CodeUtils.RESULT_STRING, "");
-            resultIntent.putExtras(bundle);
-            SecondActivity.this.setResult(RESULT_OK, resultIntent);
-            SecondActivity.this.finish();
-        }
-    };
+    private void finishWith(String code) {
+        Intent result = new Intent();
+        result.putExtra(EXTRA_RESULT, code);
+        setResult(Activity.RESULT_OK, result);
+        finish();
+    }
 
+    @Override
+    protected void onDestroy() {
+        if (cameraExecutor != null) {
+            cameraExecutor.shutdown();
+        }
+        super.onDestroy();
+    }
 }
