@@ -7,7 +7,7 @@ Language: [English](README.md) | [中文简体](README-ZH.md)
 
 Open camera. First decode. String back. Close.
 
-![qrscan](pictures/qrscan.gif)
+![qrscan.gif](https://github.com/wechat-program/album/blob/master/pic/cons/qr_scan_demo.gif)
 
 ```yaml
 dependencies:

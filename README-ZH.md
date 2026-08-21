@@ -7,7 +7,7 @@
 
 打开相机。扫到一条。字符串回来。关掉。
 
-![qrscan](pictures/qrscan.gif)
+![qrscan.gif](https://github.com/wechat-program/album/blob/master/pic/cons/qr_scan_demo.gif)
 
 ```yaml
 dependencies:
