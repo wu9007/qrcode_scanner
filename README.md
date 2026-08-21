@@ -78,15 +78,30 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `scanBytes(bytes)` | Decode image bytes |
 | `generateBarCode(code)` | QR PNG as `Uint8List` |
 
-Camera denial throws a `PlatformException` with code `PERMISSION_NOT_GRANTED` (constant `CameraAccessDenied`).
+That is the whole API. There is no widget, no scan-area parameter, no front-camera switch, no stream, no format filter.
 
-That is the whole API. There is no widget, no scan-area parameter, no front-camera switch, no stream.
+### Errors from `scan()`
+
+Cancel is `null`. Real failures throw `PlatformException`:
+
+| Dart constant | `code` | When |
+| --- | --- | --- |
+| `CameraAccessDenied` | `PERMISSION_NOT_GRANTED` | User denied camera |
+| `CameraStartFailed` | `CAMERA_START_FAILED` | No back camera / driver error |
+| `CameraInUse` | `CAMERA_IN_USE` | Another app already holds the camera |
+
+### Decoder
+
+QR is tried first (with `TRY_HARDER`), then other 2D, then 1D. A dense QR is not returned as UPC-E. There is no `formats:` argument — if you must restrict symbologies, use `mobile_scanner`.
+
+Latin-1 QR (ISO-8859-1, no ECI) is not forced to UTF-8. Byte segments that are valid UTF-8 with high bits stay UTF-8 (typical Chinese QR).
 
 ## When **not** to use this
 
 | You want | Use instead |
 | --- | --- |
 | Embedded preview / scan window / overlay / continuous scan / web / desktop | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) |
+| Only 1D / only QR / a format list | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) `formats:` |
 | Industrial PDA trigger that broadcasts an Intent | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
 | Gun set to keyboard (HID) wedge | Any `TextField`. No plugin. |
 
@@ -103,8 +118,11 @@ Three mutually exclusive paths: **camera one-shot** (this plugin) · **OEM broad
 | SDK `<3.0.0` | Dart 3 / Flutter 3.10+ |
 | Torch crash on devices with no flash | CameraX `enableTorch`, toast if unavailable |
 | Scanner locked `portrait` (tablets / landscape broken) | Follows device rotation; overlay recenters |
+| Dense QR read as UPC-E | QR (TRY_HARDER) before 1D |
+| Latin-1 QR forced to UTF-8 | BYTE_SEGMENTS → ISO-8859-1 unless valid UTF-8 |
+| Camera busy / bind fail → black Activity | `CAMERA_IN_USE` / `CAMERA_START_FAILED` to Dart |
 
-Public Dart API is unchanged.
+Public Dart API is unchanged. The two new error constants are optional.
 
 ## License
 

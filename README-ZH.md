@@ -78,15 +78,30 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `scanBytes(bytes)` | 图片字节 |
 | `generateBarCode(code)` | 二维码 PNG `Uint8List` |
 
-拒绝相机权限会抛 `PlatformException`，code 为 `PERMISSION_NOT_GRANTED`（常量 `CameraAccessDenied`）。
+API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头切换、没有码流、没有格式过滤。
 
-API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头切换、没有码流。
+### `scan()` 的错误
+
+取消是 `null`。真正失败抛 `PlatformException`：
+
+| Dart 常量 | `code` | 何时 |
+| --- | --- | --- |
+| `CameraAccessDenied` | `PERMISSION_NOT_GRANTED` | 用户拒绝相机 |
+| `CameraStartFailed` | `CAMERA_START_FAILED` | 没有后置摄像头 / 驱动失败 |
+| `CameraInUse` | `CAMERA_IN_USE` | 别的 App 占用着相机 |
+
+### 解码
+
+先 QR（带 `TRY_HARDER`），再其他二维，再一维。密集 QR 不会被读成 UPC-E。没有 `formats:` 参数——要限制码制请用 `mobile_scanner`。
+
+Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位且合法的 UTF-8 字节仍按 UTF-8（国内常见）。
 
 ## 什么时候不要用
 
 | 你要的是 | 改用 |
 | --- | --- |
 | 页面内预览 / 扫码窗 / 叠加层 / 连续扫 / Web / 桌面 | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) |
+| 只扫一维 / 只扫 QR / 要格式列表 | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) 的 `formats:` |
 | 工业 PDA 扳机走 Intent 广播 | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
 | 枪设成键盘槽入（HID） | 任何 `TextField`。不装插件 |
 
@@ -97,14 +112,17 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 | 以前 | 现在 |
 | --- | --- |
 | 仅 Android，embedding v1 残留 | Android + iOS，embedding v2 |
-| JitPack `leyan95/android-zxingLibrary` 经常失踪 | Maven Central `zxing:core:3.5.3` + CameraX 1.4 |
+| JitPack `leyan95:android-zxingLibrary` 经常失踪 | Maven Central `zxing:core:3.5.3` + CameraX 1.4 |
 | iOS 是 TODO | Vision 真扫 |
 | 乱要存储权限 | 相机 + 系统选择器 |
 | SDK `<3.0.0` | Dart 3 / Flutter 3.10+ |
 | 没手电的设备点手电崩溃 | CameraX `enableTorch`，没有就 toast |
 | 扫码页锁死竖屏（平板 / 横屏坏掉） | 跟设备旋转；叠加框重新居中 |
+| 密集 QR 被读成 UPC-E | 先 QR（TRY_HARDER）再一维 |
+| Latin-1 QR 被强行 UTF-8 | BYTE_SEGMENTS → ISO-8859-1，合法 UTF-8 除外 |
+| 相机占用 / 绑定失败 → 黑屏 Activity | 回 Dart `CAMERA_IN_USE` / `CAMERA_START_FAILED` |
 
-公开 Dart API 没变。
+公开 Dart API 没变。两个新错误常量是可选的。
 
 ## License
 

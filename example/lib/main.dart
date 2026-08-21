@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
@@ -170,9 +171,13 @@ class _MyAppState extends State<MyApp> {
   }
 
   Future<void> _scan() async {
-    final String? barcode = await scanner.scan();
-    if (barcode != null) {
-      _outputController.text = barcode;
+    try {
+      final String? barcode = await scanner.scan();
+      if (barcode != null) {
+        _outputController.text = barcode;
+      }
+    } on PlatformException catch (e) {
+      _outputController.text = '${e.code}: ${e.message ?? ''}';
     }
   }
 

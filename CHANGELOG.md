@@ -10,6 +10,10 @@ Revive for modern Flutter.
 - CODE_128 / CODE_39 / EAN / PDF417 / Aztec / Data Matrix
 - Scanner follows device orientation (no portrait lock). CameraX `setTargetRotation` on rotate; overlay recenters between top bar and torch (#45 #105 #113)
 - iOS preview + sample-buffer `videoOrientation` follow the interface when the host allows landscape
+- Decode QR (TRY_HARDER) before other 2D before 1D, so a dense QR is not stolen as UPC-E (#85)
+- Stop forcing UTF-8. BYTE_SEGMENTS → UTF-8 only if valid-with-high-bit, else ISO-8859-1 (#40)
+- Camera bind failure closes the scanner. Dart gets `CAMERA_START_FAILED` / `CAMERA_IN_USE` instead of a black Activity (#81 #130)
+- iOS Vision: QR/2D before 1D; `requestAccess` if `.notDetermined`; `CAMERA_START_FAILED` if no back camera
 - GitHub Actions CI
 - Homepage updated to `wu9007/qrcode_scanner`
 
