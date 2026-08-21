@@ -5,14 +5,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.view.View;
+import android.view.Display;
+import android.view.Surface;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -47,11 +50,14 @@ public class SecondActivity extends AppCompatActivity {
     private ScanOverlayView overlay;
     private ImageView lightButton;
     private Camera camera;
+    private Preview preview;
+    private ImageAnalysis analysis;
     private ExecutorService cameraExecutor;
     private volatile boolean handled = false;
     private SensorManager sensorManager;
     private Sensor lightSensor;
     private SensorEventListener sensorEventListener;
+    private boolean cameraBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +68,9 @@ public class SecondActivity extends AppCompatActivity {
         overlay = findViewById(R.id.scan_overlay);
         lightButton = findViewById(R.id.scan_light);
         cameraExecutor = Executors.newSingleThreadExecutor();
+
+        previewView.setImplementationMode(PreviewView.ImplementationMode.COMPATIBLE);
+        previewView.setScaleType(PreviewView.ScaleType.FILL_CENTER);
 
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         if (sensorManager != null) {
@@ -88,6 +97,15 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        applyTargetRotation();
+        if (overlay != null) {
+            overlay.invalidate();
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -104,15 +122,22 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     private void startCamera() {
+        if (cameraBound) {
+            applyTargetRotation();
+            return;
+        }
         ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
         future.addListener(() -> {
             try {
                 ProcessCameraProvider provider = future.get();
-                Preview preview = new Preview.Builder().build();
+                preview = new Preview.Builder()
+                        .setTargetRotation(currentRotation())
+                        .build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
+                analysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setTargetRotation(currentRotation())
                         .build();
                 analysis.setAnalyzer(cameraExecutor, image -> {
                     if (handled) {
@@ -130,10 +155,32 @@ public class SecondActivity extends AppCompatActivity {
                 CameraSelector selector = CameraSelector.DEFAULT_BACK_CAMERA;
                 provider.unbindAll();
                 camera = provider.bindToLifecycle(this, selector, preview, analysis);
+                cameraBound = true;
             } catch (Exception e) {
                 Toast.makeText(this, "Camera start failed", Toast.LENGTH_SHORT).show();
             }
         }, ContextCompat.getMainExecutor(this));
+    }
+
+    private void applyTargetRotation() {
+        int rotation = currentRotation();
+        if (preview != null) {
+            preview.setTargetRotation(rotation);
+        }
+        if (analysis != null) {
+            analysis.setTargetRotation(rotation);
+        }
+    }
+
+    private int currentRotation() {
+        Display display = previewView != null ? previewView.getDisplay() : null;
+        if (display == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            display = getDisplay();
+        }
+        if (display == null) {
+            display = getWindowManager().getDefaultDisplay();
+        }
+        return display != null ? display.getRotation() : Surface.ROTATION_0;
     }
 
     private void toggleTorch() {
@@ -160,6 +207,7 @@ public class SecondActivity extends AppCompatActivity {
             sensorManager.registerListener(sensorEventListener, lightSensor,
                     SensorManager.SENSOR_DELAY_NORMAL);
         }
+        applyTargetRotation();
     }
 
     @Override
