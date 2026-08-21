@@ -18,7 +18,12 @@
 
 ## 安装
 
-**pub.dev 还停在 0.3.3。** 当前构建是 GitHub tag `0.4.0`。`qrscan: ^0.4.0` 在 pub 上还解析不到。
+```yaml
+dependencies:
+  qrscan: ^0.4.0
+```
+
+Dart 3 / Flutter 3.10+。若镜像还停在 0.3.3：
 
 ```yaml
 dependencies:
@@ -26,13 +31,6 @@ dependencies:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
       ref: 0.4.0
-```
-
-等发到 pub 之后再写成：
-
-```yaml
-dependencies:
-  qrscan: ^0.4.0
 ```
 
 ### Android
