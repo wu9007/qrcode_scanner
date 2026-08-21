@@ -10,6 +10,7 @@ import androidx.camera.core.ImageProxy;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
 import com.google.zxing.PlanarYUVLuminanceSource;
@@ -17,8 +18,10 @@ import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
 import com.google.zxing.ResultMetadataType;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
@@ -133,7 +136,11 @@ final class QrDecoder {
 
     static byte[] encodeQr(String content, int size) throws Exception {
         QRCodeWriter writer = new QRCodeWriter();
-        BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size);
+        Map<EncodeHintType, Object> encodeHints = new EnumMap<>(EncodeHintType.class);
+        encodeHints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
+        encodeHints.put(EncodeHintType.MARGIN, 1);
+        encodeHints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.M);
+        BitMatrix matrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size, encodeHints);
         Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
         for (int x = 0; x < size; x++) {
             for (int y = 0; y < size; y++) {
@@ -181,7 +188,16 @@ final class QrDecoder {
             Result result = reader.decodeWithState(new BinaryBitmap(new HybridBinarizer(source)));
             return textFromResult(result);
         } catch (Exception ignored) {
-            return null;
+            if (!tryHarder) {
+                return null;
+            }
+            try {
+                Result result = reader.decodeWithState(
+                        new BinaryBitmap(new GlobalHistogramBinarizer(source)));
+                return textFromResult(result);
+            } catch (Exception ignored2) {
+                return null;
+            }
         } finally {
             reader.reset();
         }
@@ -193,6 +209,9 @@ final class QrDecoder {
         map.put(DecodeHintType.POSSIBLE_FORMATS, formats);
         if (tryHarder) {
             map.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        }
+        if (formats.contains(BarcodeFormat.CODABAR)) {
+            map.put(DecodeHintType.RETURN_CODABAR_START_END, Boolean.TRUE);
         }
         return map;
     }

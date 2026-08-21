@@ -20,17 +20,17 @@ This is **not** a hardware gun. Keyboard wedge → a `TextField`. OEM broadcast 
 
 ```yaml
 dependencies:
-  qrscan: ^0.4.0
+  qrscan: ^1.0.0
 ```
 
-Dart 3 / Flutter 3.10+. If a mirror still serves 0.3.3:
+Dart 3 / Flutter 3.10+. Git pin if you need a commit:
 
 ```yaml
 dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: 0.4.0
+      ref: v1.0.0
 ```
 
 ### Android
@@ -74,7 +74,7 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `scanPhoto()` | System picker → decode, or `null` if cancelled |
 | `scanPath(path)` | Decode a local file |
 | `scanBytes(bytes)` | Decode image bytes |
-| `generateBarCode(code)` | QR PNG as `Uint8List` |
+| `generateBarCode(code)` | QR PNG as `Uint8List` (UTF-8 payload) |
 
 That is the whole API. There is no widget, no scan-area parameter, no front-camera switch, no stream, no format filter.
 
@@ -92,7 +92,9 @@ Cancel is `null`. Real failures throw `PlatformException`:
 
 QR is tried first (with `TRY_HARDER`), then other 2D, then 1D. A dense QR is not returned as UPC-E. There is no `formats:` argument — if you must restrict symbologies, use `mobile_scanner`.
 
-Latin-1 QR (ISO-8859-1, no ECI) is not forced to UTF-8. Byte segments that are valid UTF-8 with high bits stay UTF-8 (typical Chinese QR).
+Latin-1 QR (ISO-8859-1, no ECI) is not forced to UTF-8. Byte segments that are valid UTF-8 with high bits stay UTF-8 (typical Chinese QR). `generateBarCode` writes UTF-8.
+
+Decoder order is covered by `tool/decoder-harness` (30 fixtures in CI).
 
 ## When **not** to use this
 

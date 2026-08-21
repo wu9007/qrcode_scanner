@@ -20,17 +20,17 @@
 
 ```yaml
 dependencies:
-  qrscan: ^0.4.0
+  qrscan: ^1.0.0
 ```
 
-Dart 3 / Flutter 3.10+。若镜像还停在 0.3.3：
+Dart 3 / Flutter 3.10+。钉某个提交：
 
 ```yaml
 dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: 0.4.0
+      ref: v1.0.0
 ```
 
 ### Android
@@ -74,7 +74,7 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `scanPhoto()` | 系统相册选图再解码；取消为 `null` |
 | `scanPath(path)` | 本地文件 |
 | `scanBytes(bytes)` | 图片字节 |
-| `generateBarCode(code)` | 二维码 PNG `Uint8List` |
+| `generateBarCode(code)` | 二维码 PNG `Uint8List`（UTF-8） |
 
 API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头切换、没有码流、没有格式过滤。
 
@@ -92,7 +92,9 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 
 先 QR（带 `TRY_HARDER`），再其他二维，再一维。密集 QR 不会被读成 UPC-E。没有 `formats:` 参数——要限制码制请用 `mobile_scanner`。
 
-Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位且合法的 UTF-8 字节仍按 UTF-8（国内常见）。
+Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位且合法的 UTF-8 字节仍按 UTF-8（国内常见）。`generateBarCode` 按 UTF-8 写。
+
+解码顺序由 `tool/decoder-harness` 的 30 条样本在 CI 里跑。
 
 ## 什么时候不要用
 

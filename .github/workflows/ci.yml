@@ -16,3 +16,14 @@ jobs:
       - run: flutter --version
       - run: flutter pub get
       - run: dart analyze --fatal-infos
+
+  decoder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Decoder harness (30 fixtures, same order as QrDecoder)
+        run: bash tool/decoder-harness/run.sh

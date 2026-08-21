@@ -12,3 +12,6 @@ pubspec.lock
 *.iml
 .flutter-plugins
 .flutter-plugins-dependencies
+tool/decoder-harness/lib/
+tool/decoder-harness/out/
+

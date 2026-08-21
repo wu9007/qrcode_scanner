@@ -1,4 +1,16 @@
+## 1.0.0 - (2026/08/22)
+
+API freeze. Decoder covered by a 30-case JVM harness that uses the same format order as `QrDecoder`.
+
+- `generateBarCode` encodes UTF-8 (Chinese / non-Latin no longer become `?`)
+- Codabar keeps start/stop (`RETURN_CODABAR_START_END`)
+- Album / path / bytes: HybridBinarizer then GlobalHistogramBinarizer
+- CI runs `tool/decoder-harness` (QR, Latin-1, UTF-8 without ECI, Code 128/39/93, Codabar, EAN-13/8, UPC-A/E, ITF, Data Matrix, PDF417, Aztec, invert, noise)
+
+Camera `scan()` is still one-shot. #90 (SM-A530W) stays open until that device retests.
+
 ## 0.4.0 - (2026/08/21)
+
 
 Revive for modern Flutter.
 
