@@ -30,8 +30,9 @@ import java.util.Map;
 
 final class QrDecoder {
 
-    private static final EnumSet<BarcodeFormat> TWO_D = EnumSet.of(
-            BarcodeFormat.QR_CODE,
+    /** QR alone, TRY_HARDER. Dense payloads (issue #85) must beat UPC-E. */
+    private static final EnumSet<BarcodeFormat> QR_ONLY = EnumSet.of(BarcodeFormat.QR_CODE);
+    private static final EnumSet<BarcodeFormat> TWO_D_REST = EnumSet.of(
             BarcodeFormat.DATA_MATRIX,
             BarcodeFormat.PDF_417,
             BarcodeFormat.AZTEC
@@ -147,7 +148,11 @@ final class QrDecoder {
 
     @Nullable
     private static String decodeSource(LuminanceSource source, boolean tryHarder) {
-        String text = decodeOnce(source, TWO_D, tryHarder);
+        String text = decodeOnce(source, QR_ONLY, true);
+        if (text != null) {
+            return text;
+        }
+        text = decodeOnce(source, TWO_D_REST, tryHarder);
         if (text != null) {
             return text;
         }
@@ -156,7 +161,11 @@ final class QrDecoder {
             return text;
         }
         LuminanceSource inverted = source.invert();
-        text = decodeOnce(inverted, TWO_D, tryHarder);
+        text = decodeOnce(inverted, QR_ONLY, true);
+        if (text != null) {
+            return text;
+        }
+        text = decodeOnce(inverted, TWO_D_REST, tryHarder);
         if (text != null) {
             return text;
         }
@@ -188,6 +197,10 @@ final class QrDecoder {
         return map;
     }
 
+    /**
+     * Do not force UTF-8. QR byte mode without ECI is ISO-8859-1 (#40).
+     * If BYTE_SEGMENTS are valid UTF-8 with high bits, prefer UTF-8 (Chinese QR).
+     */
     @SuppressWarnings("unchecked")
     private static String textFromResult(Result result) {
         Map<ResultMetadataType, Object> meta = result.getResultMetadata();
