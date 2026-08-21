@@ -14,6 +14,7 @@ import android.hardware.SensorManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.widget.ImageView;
@@ -45,6 +46,7 @@ public class SecondActivity extends AppCompatActivity {
     public static final String EXTRA_ERROR_MESSAGE = "ERROR_MESSAGE";
     public static boolean isLightOpen = false;
 
+    private static final String TAG = "Qrscan";
     private static final int REQUEST_IMAGE = 101;
     private static final int REQUEST_CAMERA = 202;
 
@@ -151,6 +153,7 @@ public class SecondActivity extends AppCompatActivity {
                     image.close();
                     if (code != null && !handled) {
                         handled = true;
+                        Log.i(TAG, "decoded length=" + code.length());
                         runOnUiThread(() -> finishWith(code));
                     }
                 });
@@ -159,7 +162,10 @@ public class SecondActivity extends AppCompatActivity {
                 provider.unbindAll();
                 camera = provider.bindToLifecycle(this, selector, preview, analysis);
                 cameraBound = true;
+                Log.i(TAG, "camera bound rotation=" + currentRotation()
+                        + " preview=" + previewView.getWidth() + "x" + previewView.getHeight());
             } catch (Exception e) {
+                Log.e(TAG, "camera start failed", e);
                 failAndFinish(classifyCameraFailure(e), e.getMessage());
             }
         }, ContextCompat.getMainExecutor(this));
@@ -273,6 +279,7 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     private void failAndFinish(String errorCode, String message) {
+        Log.e(TAG, "fail " + errorCode + " " + message);
         Intent data = new Intent();
         data.putExtra(EXTRA_ERROR, errorCode);
         if (message != null) {
