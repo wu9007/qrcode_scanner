@@ -22,14 +22,8 @@ jobs:
         with:
           channel: stable
       - uses: dart-lang/setup-dart@v1
-      - name: SDK versions
-        run: |
-          flutter --version
-          dart --version
-          echo "GITHUB_ACTIONS=$GITHUB_ACTIONS"
-          echo "OIDC_URL=${ACTIONS_ID_TOKEN_REQUEST_URL:+set}"
+      - run: flutter --version && dart --version
       - run: flutter pub get
-      - name: Dry-run
-        run: dart pub publish --dry-run
+      - run: git checkout -- .
       - name: Publish to pub.dev
         run: dart pub publish --force

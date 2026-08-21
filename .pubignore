@@ -1,0 +1,4 @@
+pubspec.lock
+example/pubspec.lock
+*.iml
+.github/
