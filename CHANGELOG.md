@@ -8,6 +8,8 @@ Revive for modern Flutter.
 - Drop JitPack `leyan95/android-zxingLibrary` and storage permissions
 - compileSdk 35, minSdk 21, Android 13+ photo picker
 - CODE_128 / CODE_39 / EAN / PDF417 / Aztec / Data Matrix
+- Scanner follows device orientation (no portrait lock). CameraX `setTargetRotation` on rotate; overlay recenters between top bar and torch (#45 #105 #113)
+- iOS preview + sample-buffer `videoOrientation` follow the interface when the host allows landscape
 - GitHub Actions CI
 - Homepage updated to `wu9007/qrcode_scanner`
 
