@@ -1,60 +1,56 @@
-文档语言: [English](https://github.com/flutterchina/qrscan) | [中文简体](README-ZH.md)
+文档语言: [English](README.md) | [中文简体](README-ZH.md)
 
-# 二维码扫描插件
-  
-[![License][license-image]][license-url] 
-[![Pub](https://img.shields.io/pub/v/qrscan.svg?style=flat-square)](https://pub.dartlang.org/packages/qrscan)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2564729935f441b4987fd4f49ac988d8)](https://www.codacy.com/app/leyan95/qrcode_scanner?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=leyan95/qrcode_scanner&amp;utm_campaign=Badge_Grade)
+# qrscan 二维码扫描插件
 
-A Flutter plugin 🛠 to scanning. Ready for Android 🚀
-base on ZXing [github](https://github.com/leyan95/qrcode_scanner)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Pub](https://img.shields.io/pub/v/qrscan.svg)](https://pub.dev/packages/qrscan)
 
-## 权限：
-`<uses-permission android:name="android.permission.CAMERA" />`
-`<uses-permission android:name="android.permission.VIBRATE"/>`
+Flutter 扫码 / 生码插件。
+
+- **Android**：CameraX + ZXing
+- **iOS**：AVFoundation + Vision
+- Dart 3 / Flutter 3.10+ / Android embedding v2
 
 ## 安装
 
-Add this to your package's pubspec.yaml file:
-
 ```yaml
 dependencies:
- qrscan: ^0.3.3
+  qrscan: ^0.4.0
 ```
 
-## 使用方式
+### Android
 
-![qrscan.gif](https://github.com/wechat-program/album/blob/master/pic/cons/qr_scan_demo.gif)
+`minSdk` **21**。相机权限运行时申请。不要再加读写存储权限，相册走系统选择器。
+
+### iOS
+
+在 `ios/Runner/Info.plist` 增加：
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>用于扫描二维码和条码</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>用于从相册识别二维码</string>
+```
+
+最低 iOS 12。
+
+## 用法
 
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
-// Select Bar-Code or QR-Code photos for analysis
-String photoScanResult = await scanner.scanPhoto();
-
-// Generating QR-Code
-Uint8List result = await scanner.generateBarCode('https://github.com/leyan95/qrcode_scanner');
-
-// Scanning the image of the specified path
-String barcode = await scanner.scanPath(path);
-
-// Parse to code string with uint8list
-File file = await ImagePicker.pickImage(source: ImageSource.camera);
-Uint8List bytes = file.readAsBytesSync();
-String barcode = await scanner.scanBytes(uint8list);
+String? cameraScanResult = await scanner.scan();
+String? photoScanResult = await scanner.scanPhoto();
+Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcode_scanner');
 ```
 
-## 贡献
+用户取消返回 `null`。拒绝相机权限会抛 `PERMISSION_NOT_GRANTED`。
 
-We would ❤️ to see your contribution!
+## 0.4 复活了什么
 
-## 许可
+去掉已失效的 JitPack `android-zxingLibrary`、Android embedding v1、Dart 2 SDK 上限；补上 iOS 真扫码；相册不再要存储权限。
 
-Distributed under the MIT license. See ``LICENSE`` for more information.
+## License
 
-## 关于
-
-Created by Shusheng.
-
-[license-image]: https://img.shields.io/badge/License-MIT-blue.svg
-[license-url]: LICENSE
+MIT. Created by Shusheng.

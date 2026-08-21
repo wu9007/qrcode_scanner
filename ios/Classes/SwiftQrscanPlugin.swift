@@ -1,7 +1,11 @@
+import AVFoundation
 import Flutter
 import UIKit
+import Vision
 
 public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
+  private var pendingResult: FlutterResult?
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "qr_scan", binaryMessenger: registrar.messenger())
     let instance = SwiftQrscanPlugin()
@@ -9,34 +13,238 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    if call.method == "generate_barcode" {
-        let arguments = call.arguments as? [String:Any] ?? [String: Any]()
-        guard let code = arguments["code"] as? String else {
-            return
-        }
+    switch call.method {
+    case "scan":
+      pendingResult = result
+      presentScanner()
+    case "scan_photo":
+      pendingResult = result
+      presentPicker()
+    case "scan_path":
+      let args = call.arguments as? [String: Any]
+      let path = args?["path"] as? String
+      result(Self.decode(path: path))
+    case "scan_bytes":
+      let args = call.arguments as? [String: Any]
+      let bytes = args?["bytes"] as? FlutterStandardTypedData
+      result(Self.decode(data: bytes?.data))
+    case "generate_barcode":
+      let args = call.arguments as? [String: Any]
+      guard let code = args?["code"] as? String else {
+        result(FlutterError(code: "INVALID_ARGUMENT", message: "code is required", details: nil))
+        return
+      }
+      result(Self.generateQr(code: code))
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
 
-        guard let data = code.data(using: String.Encoding.utf8) else {
-            return
-        }
+  private func presentScanner() {
+    let status = AVCaptureDevice.authorizationStatus(for: .video)
+    if status == .denied || status == .restricted {
+      finish(errorCode: "PERMISSION_NOT_GRANTED", message: "Camera permission denied")
+      return
+    }
+    let controller = ScanViewController { [weak self] value in
+      self?.finish(value: value)
+    }
+    present(controller)
+  }
 
-        guard let qr_filter = CIFilter(name: "CIQRCodeGenerator", parameters: ["inputMessage": data, "inputCorrectionLevel": "M"]) else {
-            return
-        }
+  private func presentPicker() {
+    let picker = UIImagePickerController()
+    picker.sourceType = .photoLibrary
+    picker.delegate = self
+    present(picker)
+  }
 
-        guard let ciImage = qr_filter.outputImage else {
-          return
-        }
+  private func present(_ controller: UIViewController) {
+    guard let root = Self.topViewController() else {
+      finish(errorCode: "NO_ACTIVITY", message: "Unable to present scanner")
+      return
+    }
+    controller.modalPresentationStyle = .fullScreen
+    root.present(controller, animated: true)
+  }
 
-        let scale = 400.0 / ciImage.extent.height
-        let sizeTransform = CGAffineTransform(scaleX:scale, y:scale)
-        let qrImage = ciImage.transformed(by: sizeTransform)
-        let uiImage = UIImage(ciImage: qrImage)
-        guard let bytearray = uiImage.pngData() else {
-            return
-        }
-        result(bytearray)
-    } else {
-        result("iOS " + UIDevice.current.systemVersion)
+  private func finish(value: String?) {
+    pendingResult?(value)
+    pendingResult = nil
+  }
+
+  private func finish(errorCode: String, message: String) {
+    pendingResult?(FlutterError(code: errorCode, message: message, details: nil))
+    pendingResult = nil
+  }
+
+  static func topViewController() -> UIViewController? {
+    let window = UIApplication.shared.windows.first { $0.isKeyWindow }
+    var top = window?.rootViewController
+    while let presented = top?.presentedViewController {
+      top = presented
+    }
+    return top
+  }
+
+  static func decode(path: String?) -> String? {
+    guard let path, let image = UIImage(contentsOfFile: path) else { return nil }
+    return decode(image: image)
+  }
+
+  static func decode(data: Data?) -> String? {
+    guard let data, let image = UIImage(data: data) else { return nil }
+    return decode(image: image)
+  }
+
+  static func decode(image: UIImage) -> String? {
+    guard let cgImage = image.cgImage else { return nil }
+    let request = VNDetectBarcodesRequest()
+    let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+    do {
+      try handler.perform([request])
+      return request.results?.first?.payloadStringValue
+    } catch {
+      return nil
+    }
+  }
+
+  static func generateQr(code: String) -> FlutterStandardTypedData? {
+    guard let data = code.data(using: .utf8),
+          let filter = CIFilter(name: "CIQRCodeGenerator",
+                                parameters: ["inputMessage": data, "inputCorrectionLevel": "M"]),
+          let ciImage = filter.outputImage else {
+      return nil
+    }
+    let scale = 400.0 / ciImage.extent.height
+    let scaled = ciImage.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+    let uiImage = UIImage(ciImage: scaled)
+    guard let png = uiImage.pngData() else { return nil }
+    return FlutterStandardTypedData(bytes: png)
+  }
+}
+
+extension SwiftQrscanPlugin: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+  public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+    picker.dismiss(animated: true) { [weak self] in
+      self?.finish(value: nil)
+    }
+  }
+
+  public func imagePickerController(_ picker: UIImagePickerController,
+                                    didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+    let image = (info[.originalImage] as? UIImage)
+    picker.dismiss(animated: true) { [weak self] in
+      self?.finish(value: image.flatMap { Self.decode(image: $0) })
+    }
+  }
+}
+
+final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
+  private let onResult: (String?) -> Void
+  private let session = AVCaptureSession()
+  private var didFinish = false
+  private let sessionQueue = DispatchQueue(label: "com.shinow.qrscan.session")
+
+  init(onResult: @escaping (String?) -> Void) {
+    self.onResult = onResult
+    super.init(nibName: nil, bundle: nil)
+  }
+
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    view.backgroundColor = .black
+    configureSession()
+    addChrome()
+  }
+
+  override func viewWillAppear(_ animated: Bool) {
+    super.viewWillAppear(animated)
+    sessionQueue.async { [weak self] in
+      self?.session.startRunning()
+    }
+  }
+
+  override func viewWillDisappear(_ animated: Bool) {
+    sessionQueue.async { [weak self] in
+      self?.session.stopRunning()
+    }
+    super.viewWillDisappear(animated)
+  }
+
+  private func configureSession() {
+    session.beginConfiguration()
+    session.sessionPreset = .high
+    guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+          let input = try? AVCaptureDeviceInput(device: device),
+          session.canAddInput(input) else {
+      session.commitConfiguration()
+      return
+    }
+    session.addInput(input)
+    let output = AVCaptureVideoDataOutput()
+    output.setSampleBufferDelegate(self, queue: DispatchQueue(label: "com.shinow.qrscan.frames"))
+    if session.canAddOutput(output) {
+      session.addOutput(output)
+    }
+    session.commitConfiguration()
+
+    let preview = AVCaptureVideoPreviewLayer(session: session)
+    preview.videoGravity = .resizeAspectFill
+    preview.frame = view.bounds
+    view.layer.insertSublayer(preview, at: 0)
+  }
+
+  override func viewDidLayoutSubviews() {
+    super.viewDidLayoutSubviews()
+    (view.layer.sublayers?.first as? AVCaptureVideoPreviewLayer)?.frame = view.bounds
+  }
+
+  private func addChrome() {
+    let close = UIButton(type: .system)
+    close.setTitle("Close", for: .normal)
+    close.setTitleColor(.white, for: .normal)
+    close.titleLabel?.font = UIFont.systemFont(ofSize: 17, weight: .medium)
+    close.addTarget(self, action: #selector(cancel), for: .touchUpInside)
+    close.translatesAutoresizingMaskIntoConstraints = false
+    view.addSubview(close)
+    NSLayoutConstraint.activate([
+      close.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
+      close.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8)
+    ])
+  }
+
+  @objc private func cancel() {
+    complete(nil)
+  }
+
+  func captureOutput(_ output: AVCaptureOutput,
+                     didOutput sampleBuffer: CMSampleBuffer,
+                     from connection: AVCaptureConnection) {
+    if didFinish { return }
+    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+    let request = VNDetectBarcodesRequest { [weak self] req, _ in
+      guard let self, !self.didFinish,
+            let payload = (req.results as? [VNBarcodeObservation])?.first?.payloadStringValue else {
+        return
+      }
+      self.complete(payload)
+    }
+    try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
+  }
+
+  private func complete(_ value: String?) {
+    guard !didFinish else { return }
+    didFinish = true
+    DispatchQueue.main.async { [weak self] in
+      guard let self else { return }
+      self.dismiss(animated: true) {
+        self.onResult(value)
+      }
     }
   }
 }
