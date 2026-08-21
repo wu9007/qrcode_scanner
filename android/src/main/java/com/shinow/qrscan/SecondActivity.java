@@ -41,6 +41,8 @@ public class SecondActivity extends AppCompatActivity {
 
     public static final String EXTRA_RESULT = "qrscan_result";
     public static final String EXTRA_PATH = "path";
+    public static final String EXTRA_ERROR = "ERROR_CODE";
+    public static final String EXTRA_ERROR_MESSAGE = "ERROR_MESSAGE";
     public static boolean isLightOpen = false;
 
     private static final int REQUEST_IMAGE = 101;
@@ -113,10 +115,7 @@ public class SecondActivity extends AppCompatActivity {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startCamera();
             } else {
-                Intent data = new Intent();
-                data.putExtra("ERROR_CODE", "PERMISSION_NOT_GRANTED");
-                setResult(Activity.RESULT_CANCELED, data);
-                finish();
+                failAndFinish("PERMISSION_NOT_GRANTED", "Camera permission denied");
             }
         }
     }
@@ -130,6 +129,10 @@ public class SecondActivity extends AppCompatActivity {
         future.addListener(() -> {
             try {
                 ProcessCameraProvider provider = future.get();
+                if (!provider.hasCamera(CameraSelector.DEFAULT_BACK_CAMERA)) {
+                    failAndFinish("CAMERA_START_FAILED", "No back camera");
+                    return;
+                }
                 preview = new Preview.Builder()
                         .setTargetRotation(currentRotation())
                         .build();
@@ -157,9 +160,19 @@ public class SecondActivity extends AppCompatActivity {
                 camera = provider.bindToLifecycle(this, selector, preview, analysis);
                 cameraBound = true;
             } catch (Exception e) {
-                Toast.makeText(this, "Camera start failed", Toast.LENGTH_SHORT).show();
+                failAndFinish(classifyCameraFailure(e), e.getMessage());
             }
         }, ContextCompat.getMainExecutor(this));
+    }
+
+    private static String classifyCameraFailure(Exception e) {
+        String name = e.getClass().getSimpleName();
+        String msg = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
+        if (name.contains("Unavailable") || msg.contains("in use")
+                || msg.contains("camera_in_use") || msg.contains("higher-priority")) {
+            return "CAMERA_IN_USE";
+        }
+        return "CAMERA_START_FAILED";
     }
 
     private void applyTargetRotation() {
@@ -256,6 +269,16 @@ public class SecondActivity extends AppCompatActivity {
 
     private void cancel() {
         setResult(Activity.RESULT_CANCELED);
+        finish();
+    }
+
+    private void failAndFinish(String errorCode, String message) {
+        Intent data = new Intent();
+        data.putExtra(EXTRA_ERROR, errorCode);
+        if (message != null) {
+            data.putExtra(EXTRA_ERROR_MESSAGE, message);
+        }
+        setResult(Activity.RESULT_CANCELED, data);
         finish();
     }
 

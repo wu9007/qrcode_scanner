@@ -7,6 +7,12 @@ import 'package:flutter/services.dart';
 // ignore: constant_identifier_names
 const String CameraAccessDenied = 'PERMISSION_NOT_GRANTED';
 
+/// Camera bind failed (no back camera, driver error).
+const String CameraStartFailed = 'CAMERA_START_FAILED';
+
+/// Another app already holds the camera.
+const String CameraInUse = 'CAMERA_IN_USE';
+
 const MethodChannel _channel = MethodChannel('qr_scan');
 
 /// Open the camera scanner and return the decoded string, or `null` if cancelled.
