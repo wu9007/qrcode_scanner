@@ -12,48 +12,41 @@ import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
 import com.google.zxing.LuminanceSource;
 import com.google.zxing.MultiFormatReader;
-import com.google.zxing.NotFoundException;
 import com.google.zxing.PlanarYUVLuminanceSource;
 import com.google.zxing.RGBLuminanceSource;
 import com.google.zxing.Result;
+import com.google.zxing.ResultMetadataType;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Map;
 
 final class QrDecoder {
 
-    private static final MultiFormatReader READER = new MultiFormatReader();
-    private static final Map<DecodeHintType, Object> HINTS = new EnumMap<>(DecodeHintType.class);
-    private static final Map<DecodeHintType, Object> HARD_HINTS = new EnumMap<>(DecodeHintType.class);
-
-    static {
-        EnumSet<BarcodeFormat> formats = EnumSet.of(
-                BarcodeFormat.QR_CODE,
-                BarcodeFormat.CODE_128,
-                BarcodeFormat.CODE_39,
-                BarcodeFormat.CODE_93,
-                BarcodeFormat.CODABAR,
-                BarcodeFormat.EAN_13,
-                BarcodeFormat.EAN_8,
-                BarcodeFormat.UPC_A,
-                BarcodeFormat.UPC_E,
-                BarcodeFormat.ITF,
-                BarcodeFormat.DATA_MATRIX,
-                BarcodeFormat.PDF_417,
-                BarcodeFormat.AZTEC
-        );
-        HINTS.put(DecodeHintType.POSSIBLE_FORMATS, formats);
-        HINTS.put(DecodeHintType.CHARACTER_SET, "UTF-8");
-        HARD_HINTS.putAll(HINTS);
-        HARD_HINTS.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
-        READER.setHints(HINTS);
-    }
+    private static final EnumSet<BarcodeFormat> TWO_D = EnumSet.of(
+            BarcodeFormat.QR_CODE,
+            BarcodeFormat.DATA_MATRIX,
+            BarcodeFormat.PDF_417,
+            BarcodeFormat.AZTEC
+    );
+    private static final EnumSet<BarcodeFormat> ONE_D = EnumSet.of(
+            BarcodeFormat.CODE_128,
+            BarcodeFormat.CODE_39,
+            BarcodeFormat.CODE_93,
+            BarcodeFormat.CODABAR,
+            BarcodeFormat.EAN_13,
+            BarcodeFormat.EAN_8,
+            BarcodeFormat.UPC_A,
+            BarcodeFormat.UPC_E,
+            BarcodeFormat.ITF
+    );
 
     private QrDecoder() {
     }
@@ -154,30 +147,109 @@ final class QrDecoder {
 
     @Nullable
     private static String decodeSource(LuminanceSource source, boolean tryHarder) {
-        BinaryBitmap binary = new BinaryBitmap(new HybridBinarizer(source));
+        String text = decodeOnce(source, TWO_D, tryHarder);
+        if (text != null) {
+            return text;
+        }
+        text = decodeOnce(source, ONE_D, tryHarder);
+        if (text != null) {
+            return text;
+        }
+        LuminanceSource inverted = source.invert();
+        text = decodeOnce(inverted, TWO_D, tryHarder);
+        if (text != null) {
+            return text;
+        }
+        return decodeOnce(inverted, ONE_D, tryHarder);
+    }
+
+    @Nullable
+    private static String decodeOnce(LuminanceSource source, EnumSet<BarcodeFormat> formats,
+                                     boolean tryHarder) {
+        MultiFormatReader reader = new MultiFormatReader();
+        reader.setHints(hints(formats, tryHarder));
         try {
-            Result result;
-            if (tryHarder) {
-                MultiFormatReader hard = new MultiFormatReader();
-                hard.setHints(HARD_HINTS);
-                result = hard.decode(binary);
-            } else {
-                result = READER.decodeWithState(binary);
-            }
-            return result.getText();
-        } catch (NotFoundException ignored) {
-            try {
-                Result result = READER.decodeWithState(
-                        new BinaryBitmap(new HybridBinarizer(source.invert())));
-                return result.getText();
-            } catch (Exception ignored2) {
-                return null;
-            }
+            Result result = reader.decodeWithState(new BinaryBitmap(new HybridBinarizer(source)));
+            return textFromResult(result);
         } catch (Exception ignored) {
             return null;
         } finally {
-            READER.reset();
+            reader.reset();
         }
+    }
+
+    private static Map<DecodeHintType, Object> hints(EnumSet<BarcodeFormat> formats,
+                                                     boolean tryHarder) {
+        Map<DecodeHintType, Object> map = new EnumMap<>(DecodeHintType.class);
+        map.put(DecodeHintType.POSSIBLE_FORMATS, formats);
+        if (tryHarder) {
+            map.put(DecodeHintType.TRY_HARDER, Boolean.TRUE);
+        }
+        return map;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static String textFromResult(Result result) {
+        Map<ResultMetadataType, Object> meta = result.getResultMetadata();
+        if (meta != null) {
+            Object segs = meta.get(ResultMetadataType.BYTE_SEGMENTS);
+            if (segs instanceof List) {
+                ByteArrayOutputStream all = new ByteArrayOutputStream();
+                for (Object s : (List<?>) segs) {
+                    if (s instanceof byte[]) {
+                        byte[] b = (byte[]) s;
+                        all.write(b, 0, b.length);
+                    }
+                }
+                byte[] bytes = all.toByteArray();
+                if (bytes.length > 0) {
+                    if (hasHighBit(bytes) && isValidUtf8(bytes)) {
+                        return new String(bytes, StandardCharsets.UTF_8);
+                    }
+                    return new String(bytes, StandardCharsets.ISO_8859_1);
+                }
+            }
+        }
+        return result.getText();
+    }
+
+    private static boolean hasHighBit(byte[] bytes) {
+        for (byte b : bytes) {
+            if ((b & 0x80) != 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isValidUtf8(byte[] bytes) {
+        int i = 0;
+        while (i < bytes.length) {
+            int c = bytes[i] & 0xFF;
+            int need;
+            if (c <= 0x7F) {
+                i++;
+                continue;
+            } else if (c >= 0xC2 && c <= 0xDF) {
+                need = 1;
+            } else if (c >= 0xE0 && c <= 0xEF) {
+                need = 2;
+            } else if (c >= 0xF0 && c <= 0xF4) {
+                need = 3;
+            } else {
+                return false;
+            }
+            if (i + need >= bytes.length) {
+                return false;
+            }
+            for (int j = 1; j <= need; j++) {
+                if ((bytes[i + j] & 0xC0) != 0x80) {
+                    return false;
+                }
+            }
+            i += need + 1;
+        }
+        return true;
     }
 
     private static int calculateInSampleSize(BitmapFactory.Options options, int reqW, int reqH) {
