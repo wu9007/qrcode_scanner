@@ -74,12 +74,24 @@ public class ScanOverlayView extends View {
     }
 
     @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        invalidate();
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         int w = getWidth();
         int h = getHeight();
-        float size = Math.min(w, h) * 0.68f;
+        if (w <= 0 || h <= 0) {
+            return;
+        }
+        float topBar = dp(56);
+        float bottomReserve = dp(128);
+        float availableH = Math.max(dp(120), h - topBar - bottomReserve);
+        float size = Math.min(w * 0.72f, availableH * 0.92f);
         float left = (w - size) / 2f;
-        float top = h * 0.22f;
+        float top = topBar + Math.max(0f, (availableH - size) / 2f);
         hole.set(left, top, left + size, top + size);
 
         canvas.drawRect(0, 0, w, hole.top, maskPaint);
