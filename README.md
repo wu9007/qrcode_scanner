@@ -18,14 +18,14 @@ This is **not** a hardware gun. Keyboard wedge → a `TextField`. OEM broadcast 
 
 ## Install
 
-**pub.dev still lists 0.3.3.** `0.4.0` lives on git until it is published. `qrscan: ^0.4.0` will not resolve yet.
+**pub.dev still lists 0.3.3.** GitHub tag `0.4.0` is the current build. `qrscan: ^0.4.0` will not resolve on pub yet.
 
 ```yaml
 dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: master
+      ref: 0.4.0
 ```
 
 After 0.4.0 is on pub:

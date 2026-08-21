@@ -18,14 +18,14 @@
 
 ## 安装
 
-**pub.dev 还停在 0.3.3。** `0.4.0` 目前只在 git。`qrscan: ^0.4.0` 现在解析不到。
+**pub.dev 还停在 0.3.3。** 当前构建是 GitHub tag `0.4.0`。`qrscan: ^0.4.0` 在 pub 上还解析不到。
 
 ```yaml
 dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: master
+      ref: 0.4.0
 ```
 
 等发到 pub 之后再写成：
