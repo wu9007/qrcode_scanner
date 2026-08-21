@@ -6,6 +6,11 @@ import Vision
 public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
   private var pendingResult: FlutterResult?
 
+  fileprivate static let twoD: [VNBarcodeSymbology] = [.qr, .aztec, .dataMatrix, .pdf417]
+  fileprivate static let oneD: [VNBarcodeSymbology] = [
+    .code128, .code39, .code93, .ean8, .ean13, .upce, .itf14, .i2of5
+  ]
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "qr_scan", binaryMessenger: registrar.messenger())
     let instance = SwiftQrscanPlugin()
@@ -46,8 +51,25 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
       finish(errorCode: "PERMISSION_NOT_GRANTED", message: "Camera permission denied")
       return
     }
-    let controller = ScanViewController { [weak self] value in
-      self?.finish(value: value)
+    if status == .notDetermined {
+      AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+        DispatchQueue.main.async {
+          guard let self else { return }
+          if granted {
+            self.presentScanner()
+          } else {
+            self.finish(errorCode: "PERMISSION_NOT_GRANTED", message: "Camera permission denied")
+          }
+        }
+      }
+      return
+    }
+    let controller = ScanViewController { [weak self] value, error in
+      if let error {
+        self?.finish(errorCode: error, message: "Camera start failed")
+      } else {
+        self?.finish(value: value)
+      }
     }
     present(controller)
   }
@@ -99,8 +121,16 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
 
   static func decode(image: UIImage) -> String? {
     guard let cgImage = image.cgImage else { return nil }
-    let request = VNDetectBarcodesRequest()
     let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
+    if let text = decode(handler: handler, symbologies: twoD) {
+      return text
+    }
+    return decode(handler: handler, symbologies: oneD)
+  }
+
+  static func decode(handler: VNImageRequestHandler, symbologies: [VNBarcodeSymbology]) -> String? {
+    let request = VNDetectBarcodesRequest()
+    request.symbologies = symbologies
     do {
       try handler.perform([request])
       return request.results?.first?.payloadStringValue
@@ -141,14 +171,14 @@ extension SwiftQrscanPlugin: UIImagePickerControllerDelegate, UINavigationContro
 }
 
 final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
-  private let onResult: (String?) -> Void
+  private let onResult: (String?, String?) -> Void
   private let session = AVCaptureSession()
   private var didFinish = false
   private let sessionQueue = DispatchQueue(label: "com.shinow.qrscan.session")
   private var previewLayer: AVCaptureVideoPreviewLayer?
   private var videoConnection: AVCaptureConnection?
 
-  init(onResult: @escaping (String?) -> Void) {
+  init(onResult: @escaping (String?, String?) -> Void) {
     self.onResult = onResult
     super.init(nibName: nil, bundle: nil)
   }
@@ -204,6 +234,9 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
           let input = try? AVCaptureDeviceInput(device: device),
           session.canAddInput(input) else {
       session.commitConfiguration()
+      DispatchQueue.main.async { [weak self] in
+        self?.complete(nil, error: "CAMERA_START_FAILED")
+      }
       return
     }
     session.addInput(input)
@@ -268,7 +301,7 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
   }
 
   @objc private func cancel() {
-    complete(nil)
+    complete(nil, error: nil)
   }
 
   func captureOutput(_ output: AVCaptureOutput,
@@ -276,23 +309,29 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
                      from connection: AVCaptureConnection) {
     if didFinish { return }
     guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-    let request = VNDetectBarcodesRequest { [weak self] req, _ in
-      guard let self, !self.didFinish,
-            let payload = (req.results as? [VNBarcodeObservation])?.first?.payloadStringValue else {
-        return
-      }
-      self.complete(payload)
+    if let text = decode(pixelBuffer: pixelBuffer, symbologies: SwiftQrscanPlugin.twoD) {
+      complete(text, error: nil)
+      return
     }
-    try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:]).perform([request])
+    if let text = decode(pixelBuffer: pixelBuffer, symbologies: SwiftQrscanPlugin.oneD) {
+      complete(text, error: nil)
+    }
   }
 
-  private func complete(_ value: String?) {
+  private func decode(pixelBuffer: CVPixelBuffer, symbologies: [VNBarcodeSymbology]) -> String? {
+    let request = VNDetectBarcodesRequest()
+    request.symbologies = symbologies
+    try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, orientation: .up, options: [:]).perform([request])
+    return request.results?.first?.payloadStringValue
+  }
+
+  private func complete(_ value: String?, error: String?) {
     guard !didFinish else { return }
     didFinish = true
     DispatchQueue.main.async { [weak self] in
       guard let self else { return }
       self.dismiss(animated: true) {
-        self.onResult(value)
+        self.onResult(value, error)
       }
     }
   }
