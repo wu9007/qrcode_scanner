@@ -11,7 +11,7 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.0.1
+  qrscan: ^1.0.2
 ```
 
 ```dart
@@ -82,7 +82,7 @@ QR is tried first (with `TRY_HARDER`), then other 2D, then 1D. A dense QR is not
 
 Latin-1 QR (ISO-8859-1, no ECI) is not forced to UTF-8. Byte segments that are valid UTF-8 with high bits stay UTF-8 (typical Chinese QR). `generateBarCode` writes UTF-8.
 
-Decoder order is covered by `tool/decoder-harness` (30 fixtures in CI).
+Decoder order is covered by `tool/decoder-harness` (63 fixtures in CI). Album photos that are stored rotated are retried at 90° steps.
 
 ## When **not** to use this
 

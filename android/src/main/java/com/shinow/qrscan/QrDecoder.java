@@ -155,6 +155,25 @@ final class QrDecoder {
 
     @Nullable
     private static String decodeSource(LuminanceSource source, boolean tryHarder) {
+        String text = decodePass(source, tryHarder);
+        if (text != null || !tryHarder) {
+            return text;
+        }
+        // Album / path / bytes: photos are often stored rotated. Live camera already
+        // rotates the Y plane, so it stays on the fast path (tryHarder = false).
+        LuminanceSource rotated = source;
+        for (int i = 0; i < 3; i++) {
+            rotated = rotated.rotateCounterClockwise();
+            text = decodePass(rotated, true);
+            if (text != null) {
+                return text;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static String decodePass(LuminanceSource source, boolean tryHarder) {
         String text = decodeOnce(source, QR_ONLY, true);
         if (text != null) {
             return text;

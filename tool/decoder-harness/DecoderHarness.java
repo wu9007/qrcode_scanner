@@ -11,6 +11,7 @@ import com.google.zxing.Writer;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.common.GlobalHistogramBinarizer;
 import com.google.zxing.common.HybridBinarizer;
 import com.google.zxing.oned.CodaBarWriter;
 import com.google.zxing.oned.Code128Writer;
@@ -26,10 +27,19 @@ import com.google.zxing.aztec.AztecWriter;
 import com.google.zxing.datamatrix.DataMatrixWriter;
 import com.google.zxing.pdf417.PDF417Writer;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.ConvolveOp;
+import java.awt.image.Kernel;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -37,13 +47,14 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Mirrors com.shinow.qrscan.QrDecoder decode order on the JVM (no Android).
- * Generates fixtures, decodes them, writes JSON the preview can show.
  */
 public class DecoderHarness {
 
@@ -54,11 +65,6 @@ public class DecoderHarness {
             BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.CODE_93,
             BarcodeFormat.CODABAR, BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
             BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.ITF);
-    private static final EnumSet<BarcodeFormat> ALL = EnumSet.copyOf(QR_ONLY);
-    static {
-        ALL.addAll(TWO_D_REST);
-        ALL.addAll(ONE_D);
-    }
 
     private final File outDir;
     private final List<Map<String, Object>> cases = new ArrayList<>();
@@ -76,18 +82,33 @@ public class DecoderHarness {
         h.runAll();
         h.writeReport();
         System.out.println("PASS=" + h.passed + " FAIL=" + h.failed);
-        if (h.failed > 0) {
-            System.exit(1);
-        }
+        if (h.failed > 0) System.exit(1);
     }
 
     void runAll() throws Exception {
-        qrRoundtrip("hello-ascii", "https://github.com/wu9007/qrcode_scanner");
-        qrRoundtrip("hello-chinese", "血站发血：A型 RhD+ 400ml");
+        charset();
+        formats();
+        field();
+        degrade();
+        negative();
+        encode();
+    }
+
+    private void charset() throws Exception {
+        qr("hello-ascii", "charset", "https://github.com/wu9007/qrcode_scanner");
+        qr("hello-chinese", "charset", "血站发血：A型 RhD+ 400ml");
         qrCharset("latin1-cafe", "Café naïve año", "ISO-8859-1");
         qrCharset("utf8-chinese-hint", "石家庄血站", "UTF-8");
-        qrRoundtrip("dense-base64", densePayload());
-        invertQr("invert-white-on-black", "INVERT-OK");
+        utf8StoredAsLatin1Bytes("utf8-bytes-no-eci", "石家庄血站");
+        qr("json-blood", "charset", "{\"din\":\"G123416123456\",\"abo\":\"A\",\"rhd\":\"+\",\"ml\":400}");
+        qr("url-unicode", "charset", "https://example.com/发血?袋=A型&vol=400");
+        qr("wifi", "charset", "WIFI:T:WPA;S:BloodLab;P:secret12;;");
+        qr("sms-cn", "charset", "SMSTO:10086:取血通知 请到3号窗口");
+        qr("dense-base64", "charset", densePayload());
+        numericQrNotUpc("numeric-qr", "13258283");
+    }
+
+    private void formats() throws Exception {
         oneD("code128-isbt", BarcodeFormat.CODE_128, "A9999B12345601");
         oneD("code39", BarcodeFormat.CODE_39, "ABC123");
         oneD("code93", BarcodeFormat.CODE_93, "CODE93");
@@ -100,36 +121,106 @@ public class DecoderHarness {
         twoD("datamatrix", BarcodeFormat.DATA_MATRIX, "DM-FIELD-01");
         twoD("pdf417", BarcodeFormat.PDF_417, "PDF417-BLOOD-BAG");
         twoD("aztec", BarcodeFormat.AZTEC, "AZTEC-OK");
-        oldVsNewDense();
-        garbage();
-        emptyWhite();
-        paddedQr("qr-with-quiet-zone-and-margin", "PADDED");
-        smallQr("tiny-version1", "OK");
-        longUrl("long-url", "https://example.com/path/" + "x".repeat(200) + "?q=1");
-        numericQrNotUpc("numeric-qr", "13258283");
-        utf8StoredAsLatin1Bytes("utf8-bytes-no-eci", "石家庄血站");
-        generateThenDecodeLikePlugin("plugin-encode-roundtrip", "qrscan-1.0");
-        generateThenDecodeLikePlugin("plugin-encode-chinese", "血站发血：A型 RhD+ 400ml");
+        oneD("code128-gs1-din", BarcodeFormat.CODE_128, "G123416123456");
+        oneD("ean13-isbn", BarcodeFormat.EAN_13, "9780201379624");
+        oneD("ean13-cola", BarcodeFormat.EAN_13, "5449000000996");
+        oneD("code39-mod43", BarcodeFormat.CODE_39, "BLOOD400");
     }
 
-    private void qrRoundtrip(String id, String payload) throws Exception {
+    private void field() throws Exception {
+        qr("field-issue-slip", "field", "发血单号 XB-2026-08150017 受血者 床12 A型 RhD+ 红细胞悬液 2U");
+        qr("field-wechat-pay", "field", "wxp://f2f0wu9007-blood-station-demo");
+        qr("field-alipay", "field", "https://qr.alipay.com/fkx12345abcdef");
+        qr("field-bag-url", "field", "https://bs.local/bag?din=G123416123456&abo=A&rhd=POS&vol=400");
+        oneD("field-isbt-din", "field", BarcodeFormat.CODE_128, "G123416123456");
+        oneD("field-product-code", "field", BarcodeFormat.CODE_128, "E0208V00");
+        oneD("field-codabar-bag", "field", BarcodeFormat.CODABAR, "A40123456A");
+        oneD("field-ean13-reagent", "field", BarcodeFormat.EAN_13, "6901234567892");
+        twoD("field-pdf417-bag", "field", BarcodeFormat.PDF_417, "DIN:G123416123456 ABO:A RH:POS VOL:400");
+        twoD("field-dm-short", "field", BarcodeFormat.DATA_MATRIX, "G123416123456");
+    }
+
+    private void degrade() throws Exception {
+        BufferedImage base = writeQr("https://github.com/wu9007/qrcode_scanner", 360, "UTF-8");
+        expect("deg-rotate-90", "degrade", "QR rotated 90°",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(rotate(base, 90), true), rotate(base, 90));
+        expect("deg-rotate-180", "degrade", "QR rotated 180°",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(rotate(base, 180), true), rotate(base, 180));
+        expect("deg-rotate-270", "degrade", "QR rotated 270°",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(rotate(base, 270), true), rotate(base, 270));
+        expect("deg-rotate-15", "degrade", "QR rotated 15°",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(rotate(base, 15), true), rotate(base, 15));
+        expect("deg-blur", "degrade", "slight blur",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(blur(base), true), blur(base));
+        expect("deg-jpeg40", "degrade", "JPEG quality 0.4",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(jpeg(base, 0.4f), true), jpeg(base, 0.4f));
+        expect("deg-dark", "degrade", "darkened 0.45",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(darken(base, 0.45f), true), darken(base, 0.45f));
+        expect("deg-low-contrast", "degrade", "gray on gray",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(lowContrast(base), true), lowContrast(base));
+        expect("deg-noise", "degrade", "sensor noise",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(noise(base, 28), true), noise(base, 28));
+        expect("deg-uneven", "degrade", "uneven lighting",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(uneven(base), true), uneven(base));
+        expect("deg-screenshot", "degrade", "phone screenshot chrome",
+                "https://github.com/wu9007/qrcode_scanner", decodePlugin(screenshot(base), true), screenshot(base));
+        invertQr("deg-invert", "INVERT-OK");
+        paddedQr("deg-padded", "PADDED");
+        smallQr("deg-tiny", "OK");
+        longUrl("deg-long-url", "https://example.com/path/" + "x".repeat(200) + "?q=1");
+        BufferedImage barcode = writeFormat(BarcodeFormat.CODE_128, "A9999B12345601", 400, 120);
+        expect("deg-128-rotate-90", "degrade", "Code 128 rotated 90° (album)",
+                "A9999B12345601", decodePlugin(rotate(barcode, 90), true), rotate(barcode, 90));
+        expect("deg-128-jpeg", "degrade", "Code 128 JPEG",
+                "A9999B12345601", decodePlugin(jpeg(barcode, 0.5f), true), jpeg(barcode, 0.5f));
+        BufferedImage cn = writeQr("血站发血：A型 RhD+ 400ml", 400, "UTF-8");
+        expect("deg-cn-jpeg", "degrade", "Chinese QR JPEG",
+                "血站发血：A型 RhD+ 400ml", decodePlugin(jpeg(cn, 0.45f), true), jpeg(cn, 0.45f));
+        expect("deg-cn-rotate-90", "degrade", "Chinese QR 90°",
+                "血站发血：A型 RhD+ 400ml", decodePlugin(rotate(cn, 90), true), rotate(cn, 90));
+    }
+
+    private void negative() {
+        garbage();
+        emptyWhite();
+        BufferedImage black = new BufferedImage(240, 240, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = black.createGraphics();
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, 240, 240);
+        g.dispose();
+        String got = decodePlugin(black, true);
+        record("neg-black", "negative", "black frame must be null", null, got, null, got == null);
+        save("neg-black", black);
+    }
+
+    private void encode() throws Exception {
+        generateThenDecodeLikePlugin("enc-roundtrip", "qrscan-1.0");
+        generateThenDecodeLikePlugin("enc-chinese", "血站发血：A型 RhD+ 400ml");
+        generateThenDecodeLikePlugin("enc-url", "https://github.com/wu9007/qrcode_scanner");
+        generateThenDecodeLikePlugin("enc-json", "{\"ok\":true}");
+    }
+
+    private void qr(String id, String group, String payload) throws Exception {
         BufferedImage img = writeQr(payload, 400, null);
-        expect(id, "QR roundtrip", payload, decodePlugin(img, true), img);
+        expect(id, group, "QR " + group, payload, decodePlugin(img, true), img);
     }
 
     private void qrCharset(String id, String payload, String charset) throws Exception {
         BufferedImage img = writeQr(payload, 400, charset);
-        expect(id, "QR charset " + charset, payload, decodePlugin(img, true), img);
+        expect(id, "charset", "QR charset " + charset, payload, decodePlugin(img, true), img);
     }
 
     private void invertQr(String id, String payload) throws Exception {
         BufferedImage img = writeQr(payload, 320, null);
         BufferedImage inv = invert(img);
-        save(id, inv);
-        expect(id, "inverted QR", payload, decodePlugin(inv, true), inv);
+        expect(id, "degrade", "inverted QR", payload, decodePlugin(inv, true), inv);
     }
 
     private void oneD(String id, BarcodeFormat format, String payload) throws Exception {
+        oneD(id, "format", format, payload);
+    }
+
+    private void oneD(String id, String group, BarcodeFormat format, String payload) throws Exception {
         BufferedImage img = writeFormat(format, payload, 400, 120);
         Result r = decodePluginResult(img, true);
         String got = r == null ? null : textFromResult(r);
@@ -139,40 +230,24 @@ public class DecoderHarness {
             ok = got.replaceFirst("^0+", "").equals(payload.replaceFirst("^0+", ""))
                     || payload.contains(got) || got.contains(payload);
         }
-        record(id, "1D " + format, payload, got, fmt, ok);
+        record(id, group, "1D " + format, payload, got, fmt, ok);
         save(id, img);
+    }
+
+    private void twoD(String id, BarcodeFormat format, String payload) throws Exception {
+        twoD(id, "format", format, payload);
+    }
+
+    private void twoD(String id, String group, BarcodeFormat format, String payload) throws Exception {
+        BufferedImage img = writeFormat(format, payload, 400, 400);
+        expect(id, group, "2D " + format, payload, decodePlugin(img, true), img);
     }
 
     private void utf8StoredAsLatin1Bytes(String id, String payload) throws Exception {
         byte[] utf8 = payload.getBytes(StandardCharsets.UTF_8);
         String asLatin = new String(utf8, StandardCharsets.ISO_8859_1);
         BufferedImage img = writeQr(asLatin, 360, "ISO-8859-1");
-        expect(id, "UTF-8 bytes in QR without ECI (China default)", payload, decodePlugin(img, true), img);
-    }
-
-    private void twoD(String id, BarcodeFormat format, String payload) throws Exception {
-        BufferedImage img = writeFormat(format, payload, 400, 400);
-        expect(id, "2D " + format, payload, decodePlugin(img, true), img);
-    }
-
-    private void oldVsNewDense() throws Exception {
-        String payload = densePayload();
-        BufferedImage img = writeQr(payload, 600, null);
-        save("dense-old-vs-new", img);
-        String plugin = decodePlugin(img, true);
-        String oldAll = decodeOnce(toSource(img), ALL, true);
-        boolean pluginOk = payload.equals(plugin);
-        boolean stolen = oldAll != null && oldAll.length() <= 12 && !payload.equals(oldAll);
-        record("dense-plugin", "dense QR via plugin order", payload, plugin,
-                pluginOk ? "QR_CODE" : "?", pluginOk);
-        record("dense-legacy-all-formats", "legacy all-formats-at-once",
-                "must-not-be-short-upc", oldAll,
-                stolen ? "STOLEN" : "ok-or-full",
-                !stolen || pluginOk);
-        // The 1.0 bar: plugin must return the full payload. Legacy steal is informational.
-        if (!pluginOk) {
-            // already counted in record
-        }
+        expect(id, "charset", "UTF-8 bytes in QR without ECI", payload, decodePlugin(img, true), img);
     }
 
     private void garbage() {
@@ -180,14 +255,15 @@ public class DecoderHarness {
         Graphics2D g = img.createGraphics();
         g.setColor(Color.GRAY);
         g.fillRect(0, 0, 200, 200);
+        Random rnd = new Random(1);
         for (int i = 0; i < 400; i++) {
-            g.setColor(new Color((i * 37) % 255, (i * 19) % 255, (i * 11) % 255));
-            g.fillRect((i * 13) % 200, (i * 17) % 200, 3, 3);
+            g.setColor(new Color(rnd.nextInt(255), rnd.nextInt(255), rnd.nextInt(255)));
+            g.fillRect(rnd.nextInt(200), rnd.nextInt(200), 3, 3);
         }
         g.dispose();
         String got = decodePlugin(img, true);
-        record("garbage-noise", "noise must not invent a code", null, got, null, got == null);
-        save("garbage-noise", img);
+        record("neg-garbage", "negative", "noise must not invent a code", null, got, null, got == null);
+        save("neg-garbage", img);
     }
 
     private void emptyWhite() {
@@ -197,7 +273,7 @@ public class DecoderHarness {
         g.fillRect(0, 0, 200, 200);
         g.dispose();
         String got = decodePlugin(img, true);
-        record("empty-white", "blank must be null", null, got, null, got == null);
+        record("neg-white", "negative", "blank must be null", null, got, null, got == null);
     }
 
     private void paddedQr(String id, String payload) throws Exception {
@@ -208,17 +284,17 @@ public class DecoderHarness {
         g.fillRect(0, 0, 480, 480);
         g.drawImage(qr, 140, 140, null);
         g.dispose();
-        expect(id, "QR with large quiet zone", payload, decodePlugin(canvas, true), canvas);
+        expect(id, "degrade", "QR with large quiet zone", payload, decodePlugin(canvas, true), canvas);
     }
 
     private void smallQr(String id, String payload) throws Exception {
         BufferedImage img = writeQr(payload, 80, null);
-        expect(id, "tiny QR 80px", payload, decodePlugin(img, true), img);
+        expect(id, "degrade", "tiny QR 80px", payload, decodePlugin(img, true), img);
     }
 
     private void longUrl(String id, String payload) throws Exception {
         BufferedImage img = writeQr(payload, 500, "UTF-8");
-        expect(id, "long URL QR", payload, decodePlugin(img, true), img);
+        expect(id, "degrade", "long URL QR", payload, decodePlugin(img, true), img);
     }
 
     private void numericQrNotUpc(String id, String payload) throws Exception {
@@ -227,14 +303,11 @@ public class DecoderHarness {
         String got = r == null ? null : textFromResult(r);
         String fmt = r == null ? null : r.getBarcodeFormat().toString();
         boolean ok = payload.equals(got) && "QR_CODE".equals(fmt);
-        record(id, "numeric QR must stay QR not UPC-E", payload, got + " [" + fmt + "]", fmt, ok);
+        record(id, "charset", "numeric QR must stay QR not UPC-E", payload, got + " [" + fmt + "]", fmt, ok);
         save(id, img);
-        String oldAll = decodeOnce(toSource(img), ALL, true);
-        record(id + "-legacy", "legacy all-formats on numeric QR", payload, oldAll, null, true);
     }
 
     private void generateThenDecodeLikePlugin(String id, String payload) throws Exception {
-        // Same as QrDecoder.encodeQr: QRCodeWriter default hints, black/white PNG
         QRCodeWriter writer = new QRCodeWriter();
         Map<EncodeHintType, Object> hints = new EnumMap<>(EncodeHintType.class);
         hints.put(EncodeHintType.CHARACTER_SET, "UTF-8");
@@ -242,28 +315,29 @@ public class DecoderHarness {
         hints.put(EncodeHintType.ERROR_CORRECTION, com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.M);
         BitMatrix matrix = writer.encode(payload, BarcodeFormat.QR_CODE, 400, 400, hints);
         BufferedImage img = MatrixToImageWriter.toBufferedImage(matrix);
-        expect(id, "encodeQr then decodeBitmap", payload, decodePlugin(img, true), img);
+        expect(id, "encode", "encodeQr then decodeBitmap", payload, decodePlugin(img, true), img);
     }
 
-    private void expect(String id, String title, String want, String got, BufferedImage img) {
+    private void expect(String id, String group, String title, String want, String got, BufferedImage img) {
         boolean ok = (want == null && got == null) || (want != null && want.equals(got));
-        record(id, title, want, got, null, ok);
+        record(id, group, title, want, got, null, ok);
         save(id, img);
     }
 
-    private void record(String id, String title, String want, String got, String format, boolean ok) {
+    private void record(String id, String group, String title, String want, String got, String format, boolean ok) {
         if (ok) passed++;
         else failed++;
         Map<String, Object> row = new LinkedHashMap<>();
         row.put("id", id);
+        row.put("group", group);
         row.put("title", title);
         row.put("want", want);
         row.put("got", got);
         row.put("format", format);
         row.put("ok", ok);
         cases.add(row);
-        System.out.println((ok ? "PASS" : "FAIL") + "  " + id + "  want=" + preview(want) + " got=" + preview(got)
-                + (format != null ? " fmt=" + format : ""));
+        System.out.println((ok ? "PASS" : "FAIL") + "  [" + group + "] " + id + "  want=" + preview(want)
+                + " got=" + preview(got) + (format != null ? " fmt=" + format : ""));
     }
 
     private static String preview(String s) {
@@ -313,11 +387,151 @@ public class DecoderHarness {
         BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
         for (int y = 0; y < src.getHeight(); y++) {
             for (int x = 0; x < src.getWidth(); x++) {
-                int rgb = src.getRGB(x, y);
-                dst.setRGB(x, y, (~rgb) | 0xFF000000);
+                dst.setRGB(x, y, (~src.getRGB(x, y)) | 0xFF000000);
             }
         }
         return dst;
+    }
+
+    private static BufferedImage rotate(BufferedImage src, double deg) {
+        double rad = Math.toRadians(deg);
+        double sin = Math.abs(Math.sin(rad));
+        double cos = Math.abs(Math.cos(rad));
+        int w = src.getWidth();
+        int h = src.getHeight();
+        int nw = (int) Math.floor(w * cos + h * sin);
+        int nh = (int) Math.floor(h * cos + w * sin);
+        BufferedImage dst = new BufferedImage(nw, nh, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = dst.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, nw, nh);
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        AffineTransform at = new AffineTransform();
+        at.translate((nw - w) / 2.0, (nh - h) / 2.0);
+        at.rotate(rad, w / 2.0, h / 2.0);
+        g.drawImage(src, at, null);
+        g.dispose();
+        return dst;
+    }
+
+    private static BufferedImage blur(BufferedImage src) {
+        float[] k = {
+                1 / 16f, 2 / 16f, 1 / 16f,
+                2 / 16f, 4 / 16f, 2 / 16f,
+                1 / 16f, 2 / 16f, 1 / 16f
+        };
+        return new ConvolveOp(new Kernel(3, 3, k), ConvolveOp.EDGE_NO_OP, null).filter(ensureRgb(src), null);
+    }
+
+    private static BufferedImage jpeg(BufferedImage src, float q) {
+        try {
+            Iterator<ImageWriter> it = ImageIO.getImageWritersByFormatName("jpeg");
+            ImageWriter w = it.next();
+            ImageWriteParam p = w.getDefaultWriteParam();
+            p.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+            p.setCompressionQuality(q);
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            w.setOutput(new MemoryCacheImageOutputStream(bos));
+            w.write(null, new IIOImage(ensureRgb(src), null, null), p);
+            w.dispose();
+            return ImageIO.read(new ByteArrayInputStream(bos.toByteArray()));
+        } catch (Exception e) {
+            return src;
+        }
+    }
+
+    private static BufferedImage darken(BufferedImage src, float factor) {
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < src.getHeight(); y++) {
+            for (int x = 0; x < src.getWidth(); x++) {
+                int rgb = src.getRGB(x, y);
+                int r = Math.min(255, (int) (((rgb >> 16) & 0xFF) * factor));
+                int g = Math.min(255, (int) (((rgb >> 8) & 0xFF) * factor));
+                int b = Math.min(255, (int) ((rgb & 0xFF) * factor));
+                dst.setRGB(x, y, (r << 16) | (g << 8) | b);
+            }
+        }
+        return dst;
+    }
+
+    private static BufferedImage lowContrast(BufferedImage src) {
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+        for (int y = 0; y < src.getHeight(); y++) {
+            for (int x = 0; x < src.getWidth(); x++) {
+                int rgb = src.getRGB(x, y);
+                int l = ((rgb >> 16) & 0xFF) < 128 ? 110 : 170;
+                dst.setRGB(x, y, (l << 16) | (l << 8) | l);
+            }
+        }
+        return dst;
+    }
+
+    private static BufferedImage noise(BufferedImage src, int amt) {
+        BufferedImage dst = ensureRgb(src);
+        Random rnd = new Random(7);
+        for (int y = 0; y < dst.getHeight(); y++) {
+            for (int x = 0; x < dst.getWidth(); x++) {
+                int rgb = dst.getRGB(x, y);
+                int n = rnd.nextInt(amt * 2 + 1) - amt;
+                int r = clamp(((rgb >> 16) & 0xFF) + n);
+                int g = clamp(((rgb >> 8) & 0xFF) + n);
+                int b = clamp((rgb & 0xFF) + n);
+                dst.setRGB(x, y, (r << 16) | (g << 8) | b);
+            }
+        }
+        return dst;
+    }
+
+    private static BufferedImage uneven(BufferedImage src) {
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+        int w = src.getWidth();
+        for (int y = 0; y < src.getHeight(); y++) {
+            for (int x = 0; x < w; x++) {
+                float f = 0.55f + 0.7f * (x / (float) w);
+                int rgb = src.getRGB(x, y);
+                int r = clamp((int) (((rgb >> 16) & 0xFF) * f));
+                int g = clamp((int) (((rgb >> 8) & 0xFF) * f));
+                int b = clamp((int) ((rgb & 0xFF) * f));
+                dst.setRGB(x, y, (r << 16) | (g << 8) | b);
+            }
+        }
+        return dst;
+    }
+
+    private static BufferedImage screenshot(BufferedImage qr) {
+        BufferedImage dst = new BufferedImage(360, 640, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = dst.createGraphics();
+        g.setColor(new Color(246, 247, 248));
+        g.fillRect(0, 0, 360, 640);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, 360, 36);
+        g.setColor(new Color(18, 20, 23));
+        g.drawString("9:41", 16, 24);
+        int x = (360 - 240) / 2;
+        g.drawImage(qr, x, 160, 240, 240, null);
+        g.dispose();
+        return dst;
+    }
+
+    private static BufferedImage ensureRgb(BufferedImage src) {
+        if (src.getType() == BufferedImage.TYPE_INT_RGB) {
+            BufferedImage c = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = c.createGraphics();
+            g.drawImage(src, 0, 0, null);
+            g.dispose();
+            return c;
+        }
+        BufferedImage c = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = c.createGraphics();
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, c.getWidth(), c.getHeight());
+        g.drawImage(src, 0, 0, null);
+        g.dispose();
+        return c;
+    }
+
+    private static int clamp(int v) {
+        return Math.max(0, Math.min(255, v));
     }
 
     private String decodePlugin(BufferedImage img, boolean tryHarder) {
@@ -326,7 +540,22 @@ public class DecoderHarness {
     }
 
     private Result decodePluginResult(BufferedImage img, boolean tryHarder) {
-        LuminanceSource source = toSource(img);
+        return decodeSource(toSource(img), tryHarder);
+    }
+
+    /** Same order as QrDecoder.decodeSource, plus 90° retries when tryHarder. */
+    private Result decodeSource(LuminanceSource source, boolean tryHarder) {
+        Result r = decodePass(source, tryHarder);
+        if (r != null || !tryHarder) return r;
+        for (int rot = 1; rot <= 3; rot++) {
+            source = source.rotateCounterClockwise();
+            r = decodePass(source, true);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    private Result decodePass(LuminanceSource source, boolean tryHarder) {
         Result r = decodeOnceResult(source, QR_ONLY, true);
         if (r != null) return r;
         r = decodeOnceResult(source, TWO_D_REST, tryHarder);
@@ -345,11 +574,6 @@ public class DecoderHarness {
         return new BufferedImageLuminanceSource(img);
     }
 
-    private static String decodeOnce(LuminanceSource source, EnumSet<BarcodeFormat> formats, boolean tryHarder) {
-        Result r = decodeOnceResult(source, formats, tryHarder);
-        return r == null ? null : textFromResult(r);
-    }
-
     private static Result decodeOnceResult(LuminanceSource source, EnumSet<BarcodeFormat> formats,
                                            boolean tryHarder) {
         MultiFormatReader reader = new MultiFormatReader();
@@ -365,8 +589,7 @@ public class DecoderHarness {
         } catch (Exception e) {
             if (!tryHarder) return null;
             try {
-                return reader.decodeWithState(new BinaryBitmap(
-                        new com.google.zxing.common.GlobalHistogramBinarizer(source)));
+                return reader.decodeWithState(new BinaryBitmap(new GlobalHistogramBinarizer(source)));
             } catch (Exception e2) {
                 return null;
             }
@@ -441,12 +664,13 @@ public class DecoderHarness {
         sb.append("  \"failed\": ").append(failed).append(",\n");
         sb.append("  \"total\": ").append(passed + failed).append(",\n");
         sb.append("  \"plugin\": \"qrscan\",\n");
-        sb.append("  \"version_under_test\": \"1.0.0\",\n");
+        sb.append("  \"version_under_test\": \"1.0.2\",\n");
         sb.append("  \"cases\": [\n");
         for (int i = 0; i < cases.size(); i++) {
             Map<String, Object> c = cases.get(i);
             sb.append("    {");
             sb.append("\"id\":").append(json(c.get("id"))).append(",");
+            sb.append("\"group\":").append(json(c.get("group"))).append(",");
             sb.append("\"title\":").append(json(c.get("title"))).append(",");
             sb.append("\"want\":").append(json(c.get("want"))).append(",");
             sb.append("\"got\":").append(json(c.get("got"))).append(",");
@@ -458,6 +682,24 @@ public class DecoderHarness {
         }
         sb.append("  ]\n}\n");
         Files.writeString(new File(outDir, "decoder-report.json").toPath(), sb.toString());
+
+        StringBuilder md = new StringBuilder();
+        md.append("# qrscan decoder report\n\n");
+        md.append("- version: 1.0.2\n");
+        md.append("- passed: ").append(passed).append("\n");
+        md.append("- failed: ").append(failed).append("\n");
+        md.append("- total: ").append(passed + failed).append("\n\n");
+        String lastGroup = "";
+        for (Map<String, Object> c : cases) {
+            String g = String.valueOf(c.get("group"));
+            if (!g.equals(lastGroup)) {
+                md.append("## ").append(g).append("\n\n");
+                lastGroup = g;
+            }
+            md.append("- ").append(Boolean.TRUE.equals(c.get("ok")) ? "PASS" : "FAIL");
+            md.append(" `").append(c.get("id")).append("` ").append(c.get("title")).append("\n");
+        }
+        Files.writeString(new File(outDir, "TEST-REPORT.md").toPath(), md.toString());
     }
 
     private static String json(Object o) {

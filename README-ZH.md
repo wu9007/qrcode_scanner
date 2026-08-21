@@ -11,7 +11,7 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.0.1
+  qrscan: ^1.0.2
 ```
 
 ```dart
@@ -27,7 +27,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.0.1
+      ref: v1.0.2
 ```
 
 ### Android
@@ -91,7 +91,7 @@ API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头
 
 Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位且合法的 UTF-8 字节仍按 UTF-8（国内常见）。`generateBarCode` 按 UTF-8 写。
 
-解码顺序由 `tool/decoder-harness` 的 30 条样本在 CI 里跑。
+解码顺序由 `tool/decoder-harness` 的 63 条样本在 CI 里跑。相册里拍歪/系统存成横图的，按 90° 重试。
 
 ## 什么时候不要用
 
