@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -16,9 +17,11 @@ public class ScanOverlayView extends View {
     private final Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint cornerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final TextPaint hintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final RectF hole = new RectF();
     private ValueAnimator animator;
     private float lineT = 0f;
+    private String hint;
 
     public ScanOverlayView(Context context) {
         super(context);
@@ -42,6 +45,18 @@ public class ScanOverlayView extends View {
         cornerPaint.setStyle(Paint.Style.STROKE);
         linePaint.setColor(0xFF12C4FF);
         linePaint.setStrokeWidth(dp(2));
+        hintPaint.setColor(0xFFFFFFFF);
+        hintPaint.setTextAlign(Paint.Align.CENTER);
+        hintPaint.setTextSize(dp(14));
+    }
+
+    void setStyle(@Nullable Integer color, @Nullable String hint) {
+        if (color != null) {
+            cornerPaint.setColor(color);
+            linePaint.setColor(color);
+        }
+        this.hint = (hint == null || hint.trim().isEmpty()) ? null : hint.trim();
+        invalidate();
     }
 
     void start() {
@@ -116,6 +131,11 @@ public class ScanOverlayView extends View {
         float y = hole.top + hole.height() * lineT;
         linePaint.setAlpha(200);
         canvas.drawLine(hole.left + dp(8), y, hole.right - dp(8), y, linePaint);
+
+        if (hint != null) {
+            float textY = Math.min(h - dp(140), hole.bottom + dp(28));
+            canvas.drawText(hint, w / 2f, textY, hintPaint);
+        }
     }
 
     private float dp(float v) {

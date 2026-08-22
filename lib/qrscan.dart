@@ -5,6 +5,7 @@
 library qrscan;
 
 import 'dart:async';
+import 'dart:ui' show Color;
 
 import 'package:flutter/services.dart';
 
@@ -26,7 +27,22 @@ const MethodChannel _channel = MethodChannel('qr_scan');
 /// Open the camera scanner and return the decoded string, or `null` if cancelled.
 ///
 /// This does not open the gallery. Use [scanPhoto] for that.
-Future<String?> scan() async => await _channel.invokeMethod<String>('scan');
+///
+/// [color] tints the corner marks and the scan line (default `#12C4FF`).
+/// [hint] is a single line under the viewfinder. Omit both and `scan()` is
+/// the 2019 call.
+Future<String?> scan({Color? color, String? hint}) async {
+  final Map<String, Object> args = <String, Object>{};
+  if (color != null) {
+    // Color.value is ARGB. toARGB32() needs a newer Flutter than 3.10.
+    // ignore: deprecated_member_use
+    args['color'] = color.value;
+  }
+  if (hint != null) {
+    args['hint'] = hint;
+  }
+  return await _channel.invokeMethod<String>('scan', args);
+}
 
 /// Pick an image from the gallery and decode a barcode / QR code.
 Future<String?> scanPhoto() async =>

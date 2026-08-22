@@ -34,6 +34,8 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
     private Activity activity;
     private ActivityPluginBinding activityBinding;
     private Result pendingResult;
+    private Integer pendingColor;
+    private String pendingHint;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
@@ -86,6 +88,8 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         switch (call.method) {
             case "scan":
                 pendingResult = result;
+                pendingColor = intArg(call, "color");
+                pendingHint = call.argument("hint");
                 launchScanner();
                 break;
             case "scan_photo":
@@ -134,7 +138,28 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
             return;
         }
         Intent intent = new Intent(activity, SecondActivity.class);
+        putStyle(intent);
         activity.startActivityForResult(intent, REQUEST_SCAN);
+    }
+
+    private void putStyle(Intent intent) {
+        if (pendingColor != null) {
+            intent.putExtra(SecondActivity.EXTRA_COLOR, pendingColor.intValue());
+        }
+        if (pendingHint != null) {
+            intent.putExtra(SecondActivity.EXTRA_HINT, pendingHint);
+        }
+    }
+
+    private static Integer intArg(MethodCall call, String key) {
+        Object v = call.argument(key);
+        if (v instanceof Integer) {
+            return (Integer) v;
+        }
+        if (v instanceof Number) {
+            return ((Number) v).intValue();
+        }
+        return null;
     }
 
     private void choosePhoto() {
@@ -152,6 +177,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         }
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(activity, SecondActivity.class);
+            putStyle(intent);
             activity.startActivityForResult(intent, REQUEST_SCAN);
         } else {
             finishWithError("PERMISSION_NOT_GRANTED", "Camera permission denied");

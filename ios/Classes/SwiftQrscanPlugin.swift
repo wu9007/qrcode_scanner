@@ -28,7 +28,8 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
     switch call.method {
     case "scan":
       pendingResult = result
-      presentScanner()
+      let args = call.arguments as? [String: Any]
+      presentScanner(color: Self.uiColor(args?["color"]), hint: args?["hint"] as? String)
     case "scan_photo":
       pendingResult = result
       presentPicker()
@@ -52,7 +53,7 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  private func presentScanner() {
+  private func presentScanner(color: UIColor? = nil, hint: String? = nil) {
     let status = AVCaptureDevice.authorizationStatus(for: .video)
     if status == .denied || status == .restricted {
       finish(errorCode: "PERMISSION_NOT_GRANTED", message: "Camera permission denied")
@@ -63,7 +64,7 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
         DispatchQueue.main.async {
           guard let self else { return }
           if granted {
-            self.presentScanner()
+            self.presentScanner(color: color, hint: hint)
           } else {
             self.finish(errorCode: "PERMISSION_NOT_GRANTED", message: "Camera permission denied")
           }
@@ -71,7 +72,7 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
       }
       return
     }
-    let controller = ScanViewController { [weak self] value, error in
+    let controller = ScanViewController(color: color, hint: hint) { [weak self] value, error in
       if let error {
         let message = error == "CAMERA_IN_USE" ? "Camera in use" : "Camera start failed"
         self?.finish(errorCode: error, message: message)
@@ -106,6 +107,22 @@ public class SwiftQrscanPlugin: NSObject, FlutterPlugin {
   private func finish(errorCode: String, message: String) {
     pendingResult?(FlutterError(code: errorCode, message: message, details: nil))
     pendingResult = nil
+  }
+
+  static func uiColor(_ value: Any?) -> UIColor? {
+    let bits: UInt32
+    if let num = value as? NSNumber {
+      bits = UInt32(truncatingIfNeeded: num.int64Value)
+    } else if let i = value as? Int {
+      bits = UInt32(truncatingIfNeeded: i)
+    } else {
+      return nil
+    }
+    let a = CGFloat((bits >> 24) & 0xff) / 255
+    let r = CGFloat((bits >> 16) & 0xff) / 255
+    let g = CGFloat((bits >> 8) & 0xff) / 255
+    let b = CGFloat(bits & 0xff) / 255
+    return UIColor(red: r, green: g, blue: b, alpha: a)
   }
 
   static func topViewController() -> UIViewController? {
@@ -236,6 +253,8 @@ extension SwiftQrscanPlugin: UIImagePickerControllerDelegate, UINavigationContro
 
 final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSampleBufferDelegate {
   private let onResult: (String?, String?) -> Void
+  private let accent: UIColor
+  private let hint: String?
   private let session = AVCaptureSession()
   private var didFinish = false
   private let sessionQueue = DispatchQueue(label: "com.shinow.qrscan.session")
@@ -245,8 +264,11 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
   private let overlay = ScanOverlayView()
   private var torchButton: UIButton?
 
-  init(onResult: @escaping (String?, String?) -> Void) {
+  init(color: UIColor?, hint: String?, onResult: @escaping (String?, String?) -> Void) {
     self.onResult = onResult
+    self.accent = color ?? UIColor(red: 0.07, green: 0.77, blue: 1, alpha: 1)
+    let trimmed = hint?.trimmingCharacters(in: .whitespacesAndNewlines)
+    self.hint = (trimmed?.isEmpty == false) ? trimmed : nil
     super.init(nibName: nil, bundle: nil)
   }
 
@@ -376,6 +398,7 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
   }
 
   private func addChrome() {
+    overlay.apply(color: accent, hint: hint)
     overlay.translatesAutoresizingMaskIntoConstraints = false
     view.addSubview(overlay)
     NSLayoutConstraint.activate([
@@ -474,16 +497,30 @@ final class ScanViewController: UIViewController, AVCaptureVideoDataOutputSample
 
 final class ScanOverlayView: UIView {
   private let line = UIView()
+  private let hintLabel = UILabel()
   private var hole = CGRect.zero
   private var running = false
+  private var accent = UIColor(red: 0.07, green: 0.77, blue: 1, alpha: 1)
 
   override init(frame: CGRect) {
     super.init(frame: frame)
     isOpaque = false
     backgroundColor = .clear
     isUserInteractionEnabled = false
-    line.backgroundColor = UIColor(red: 0.07, green: 0.77, blue: 1, alpha: 0.9)
+    line.backgroundColor = accent.withAlphaComponent(0.9)
     addSubview(line)
+    hintLabel.textColor = .white
+    hintLabel.font = UIFont.systemFont(ofSize: 14)
+    hintLabel.textAlignment = .center
+    hintLabel.numberOfLines = 2
+    addSubview(hintLabel)
+  }
+
+  func apply(color: UIColor, hint: String?) {
+    accent = color
+    line.backgroundColor = color.withAlphaComponent(0.9)
+    hintLabel.text = hint
+    setNeedsDisplay()
   }
 
   required init?(coder: NSCoder) { fatalError("init(coder:) not used") }
@@ -498,6 +535,7 @@ final class ScanOverlayView: UIView {
     let top = topBar + max(0, (available - size) / 2)
     hole = CGRect(x: left, y: top, width: size, height: size)
     line.frame = CGRect(x: hole.minX + 8, y: hole.minY + 8, width: hole.width - 16, height: 2)
+    hintLabel.frame = CGRect(x: hole.minX, y: hole.maxY + 16, width: hole.width, height: 40)
     setNeedsDisplay()
     if running { start() }
   }
@@ -509,7 +547,7 @@ final class ScanOverlayView: UIView {
     ctx.fill(CGRect(x: 0, y: hole.maxY, width: bounds.width, height: bounds.height - hole.maxY))
     ctx.fill(CGRect(x: 0, y: hole.minY, width: hole.minX, height: hole.height))
     ctx.fill(CGRect(x: hole.maxX, y: hole.minY, width: bounds.width - hole.maxX, height: hole.height))
-    ctx.setStrokeColor(UIColor(red: 0.07, green: 0.77, blue: 1, alpha: 1).cgColor)
+    ctx.setStrokeColor(accent.cgColor)
     ctx.setLineWidth(3)
     let len: CGFloat = 22
     let t = hole.minY, b = hole.maxY, l = hole.minX, r = hole.maxX

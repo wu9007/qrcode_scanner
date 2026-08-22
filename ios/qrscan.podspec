@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'qrscan'
-  s.version          = '1.1.2'
+  s.version          = '1.2.0'
   s.summary          = 'Flutter QR / barcode scanner plugin.'
   s.description      = <<-DESC
 Scan QR codes and barcodes, and generate QR images on Android and iOS.

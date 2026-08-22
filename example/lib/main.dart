@@ -38,7 +38,10 @@ class _DemoPageState extends State<DemoPage> {
 
   Future<void> _scan() async {
     try {
-      final String? code = await scanner.scan();
+      final String? code = await scanner.scan(
+        color: Theme.of(context).colorScheme.primary,
+        hint: '对准条码或二维码',
+      );
       if (!mounted) return;
       setState(() => _result = code);
     } on PlatformException catch (e) {

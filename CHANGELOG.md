@@ -1,4 +1,18 @@
+## 1.2.0 - (2026/08/22)
+
+`scan()` is still one line. Optional overlay only:
+
+```dart
+await scanner.scan();
+await scanner.scan(color: Color(0xFF00C853), hint: '对准条码或二维码');
+```
+
+- `color` tints corners + scan line (default `#12C4FF`). Android + iOS
+- `hint` one line under the viewfinder
+- Not a widget. No hole size, no custom overlay builder — that is `mobile_scanner`
+
 ## 1.1.2 - (2026/08/22)
+
 
 Docs only. `scan()` already reads 1D barcodes (Code 128 / 39, EAN, UPC, …) and 2D. No API change.
 

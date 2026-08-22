@@ -11,13 +11,17 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.1.2
+  qrscan: ^1.2.0
 ```
 
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? code = await scanner.scan();
+String? also = await scanner.scan(
+  color: Color(0xFF00C853),
+  hint: '对准条码或二维码',
+);
 ```
 
 Dart 3 / Flutter 3.10+。钉某个提交：
@@ -27,7 +31,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.1.2
+      ref: v1.2.0
 ```
 
 ### Android
@@ -59,6 +63,7 @@ iOS 横屏只有宿主 App 的 `UISupportedInterfaceOrientations` 里包含横�
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? cameraScanResult = await scanner.scan();
+String? branded = await scanner.scan(color: Color(0xFF00C853), hint: '对准条码或二维码');
 String? photoScanResult = await scanner.scanPhoto();
 String? fromPath = await scanner.scanPath(path);
 String? fromBytes = await scanner.scanBytes(bytes);
@@ -67,13 +72,13 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 
 | 调用 | 返回 |
 | --- | --- |
-| `scan()` | 解码字符串；用户取消为 `null`。只开相机，不开相册 |
+| `scan({color, hint})` | 解码字符串；用户取消为 `null`。只开相机。`color` / `hint` 可选 |
 | `scanPhoto()` | 系统相册选图再解码；取消为 `null` |
 | `scanPath(path)` | 本地文件 |
 | `scanBytes(bytes)` | 图片字节 |
 | `generateBarCode(code)` | 二维码 PNG `Uint8List`（UTF-8） |
 
-API 就这些。没有 Widget、没有扫码区域参数、没有前后摄像头切换、没有码流、没有格式过滤。
+API 就这些。没有 Widget、没有裁切识别区、没有前后摄像头切换、没有码流、没有格式过滤。框只是瞄准，解码仍是整帧。
 
 ### `scan()` 的错误
 

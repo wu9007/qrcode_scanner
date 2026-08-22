@@ -11,13 +11,18 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.1.2
+  qrscan: ^1.2.0
 ```
 
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? code = await scanner.scan();
+// optional: brand color + one line of hint
+String? also = await scanner.scan(
+  color: Color(0xFF00C853),
+  hint: '对准条码或二维码',
+);
 ```
 
 This is **not** an embedded camera widget. Preview / scan window / overlay / torch API / continuous scan → [`mobile_scanner`](https://pub.dev/packages/mobile_scanner).
@@ -50,6 +55,7 @@ Minimum iOS 12. Landscape only if the host already lists it in `UISupportedInter
 
 ```dart
 String? cameraScanResult = await scanner.scan();
+String? branded = await scanner.scan(color: Color(0xFF00C853), hint: '对准条码或二维码');
 String? photoScanResult = await scanner.scanPhoto();
 String? fromPath = await scanner.scanPath(path);
 String? fromBytes = await scanner.scanBytes(bytes);
@@ -58,13 +64,13 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 
 | Call | Returns |
 | --- | --- |
-| `scan()` | Decoded string, or `null` if the user cancels. Camera only — not the gallery |
+| `scan({color, hint})` | Decoded string, or `null` if the user cancels. Camera only — not the gallery. `color` / `hint` optional |
 | `scanPhoto()` | System picker → decode, or `null` if cancelled |
 | `scanPath(path)` | Decode a local file |
 | `scanBytes(bytes)` | Decode image bytes |
 | `generateBarCode(code)` | QR PNG as `Uint8List` (UTF-8 payload) |
 
-That is the whole API. There is no widget, no scan-area parameter, no front-camera switch, no stream, no format filter.
+That is the whole API. There is no widget, no scan-area crop, no front-camera switch, no stream, no format filter. Overlay is cosmetic — decode still uses the full frame.
 
 ### Errors from `scan()`
 
