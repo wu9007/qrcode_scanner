@@ -1,4 +1,11 @@
+## 1.1.2 - (2026/08/22)
+
+Docs only. `scan()` already reads 1D barcodes (Code 128 / 39, EAN, UPC, …) and 2D. No API change.
+
+- README: camera on a phone **or** a PDA uses `scan()`; laser broadcast uses `pda_scanner`
+
 ## 1.1.1 - (2026/08/22)
+
 
 Listing only. No API change.
 
