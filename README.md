@@ -11,7 +11,7 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.1
+  qrscan: ^1.2.2
 ```
 
 ```dart
@@ -70,6 +70,58 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `generateBarCode(code)` | QR PNG as `Uint8List` (UTF-8 payload) |
 
 That is the whole API. There is no widget, no scan-area crop, no front-camera switch, no stream, no format filter. Overlay is cosmetic — decode still uses the full frame.
+
+### Copy this button
+
+Drop-in widget (also in `example/lib/scan_button.dart`):
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:qrscan/qrscan.dart' as scanner;
+
+class ScanButton extends StatelessWidget {
+  const ScanButton({
+    super.key,
+    this.looks = scanner.ScanLooks.wechat,
+    this.label = '扫一扫',
+    this.onCode,
+  });
+
+  final scanner.ScanLooks looks;
+  final String label;
+  final ValueChanged<String>? onCode;
+
+  Future<void> _scan(BuildContext context) async {
+    try {
+      final String? code = await scanner.scan(looks: looks);
+      if (code != null) onCode?.call(code);
+    } on PlatformException catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.code)),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      style: FilledButton.styleFrom(
+        backgroundColor: looks.color,
+        foregroundColor: Colors.white,
+        minimumSize: const Size.fromHeight(48),
+      ),
+      onPressed: () => _scan(context),
+      child: Text(label),
+    );
+  }
+}
+
+// WeChat:  ScanButton(looks: ScanLooks.wechat, label: '扫一扫', onCode: ...)
+// Alipay:  ScanButton(looks: ScanLooks.alipay, label: '扫码', onCode: ...)
+// Own:     ScanButton(looks: ScanLooks(color: Color(0xFFFF6A00), hint: '对准条码'), ...)
+```
 
 ### Errors from `scan()`
 

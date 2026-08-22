@@ -1,4 +1,16 @@
+## 1.2.2 - (2026/08/22)
+
+Drop-in `ScanButton` demo you can copy: `example/lib/scan_button.dart`.
+
+```dart
+ScanButton(looks: ScanLooks.wechat, label: '扫一扫', onCode: ...);
+ScanButton(looks: ScanLooks.alipay, label: '扫码', onCode: ...);
+```
+
+No API change. `scan()` / `ScanLooks` are the same.
+
 ## 1.2.1 - (2026/08/22)
+
 
 Same two knobs. Looks like WeChat / Alipay without becoming a widget.
 

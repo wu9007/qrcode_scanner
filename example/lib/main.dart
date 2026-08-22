@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
+import 'scan_button.dart';
+
 void main() {
   runApp(const DemoApp());
 }
@@ -16,7 +18,7 @@ class DemoApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF12C4FF),
+          seedColor: const Color(0xFF07C160),
           brightness: Brightness.light,
         ),
       ),
@@ -37,16 +39,8 @@ class _DemoPageState extends State<DemoPage> {
   Uint8List? _png;
   scanner.ScanLooks _looks = scanner.ScanLooks.wechat;
 
-  Future<void> _scan() async {
-    try {
-      final String? code = await scanner.scan(looks: _looks);
-      if (!mounted) return;
-      setState(() => _result = code);
-    } on PlatformException catch (e) {
-      if (!mounted) return;
-      setState(() => _result = e.code);
-    }
-  }
+  String get _label =>
+      _looks == scanner.ScanLooks.alipay ? '扫码' : '扫一扫';
 
   Future<void> _photo() async {
     final String? code = await scanner.scanPhoto();
@@ -77,7 +71,7 @@ class _DemoPageState extends State<DemoPage> {
                 'qrscan',
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       letterSpacing: 1.4,
-                      color: cs.primary,
+                      color: _looks.color,
                     ),
               ),
               const SizedBox(height: 28),
@@ -86,19 +80,18 @@ class _DemoPageState extends State<DemoPage> {
                   child: _png != null
                       ? Image.memory(_png!, width: 180, height: 180)
                       : Text(
-                          _result ?? '点扫描',
+                          _result ?? _looks.hint ?? '点扫描',
                           textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.headlineSmall
+                          style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: _result == null
-                                    ? cs.onSurface.withValues(alpha: 0.28)
+                                    ? cs.onSurface.withValues(alpha: 0.45)
                                     : cs.onSurface,
-                                height: 1.35,
+                                height: 1.4,
                               ),
                         ),
                 ),
               ),
-              const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 children: <Widget>[
@@ -106,23 +99,25 @@ class _DemoPageState extends State<DemoPage> {
                     label: '微信',
                     color: scanner.ScanLooks.wechat.color,
                     selected: _looks == scanner.ScanLooks.wechat,
-                    onTap: () => setState(() => _looks = scanner.ScanLooks.wechat),
+                    onTap: () => setState(
+                      () => _looks = scanner.ScanLooks.wechat,
+                    ),
                   ),
                   _LooksChip(
                     label: '支付宝',
                     color: scanner.ScanLooks.alipay.color,
                     selected: _looks == scanner.ScanLooks.alipay,
-                    onTap: () => setState(() => _looks = scanner.ScanLooks.alipay),
+                    onTap: () => setState(
+                      () => _looks = scanner.ScanLooks.alipay,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
-              FilledButton(
-                onPressed: _scan,
-                style: FilledButton.styleFrom(
-                  minimumSize: const Size.fromHeight(52),
-                ),
-                child: const Text('扫描'),
+              const SizedBox(height: 12),
+              ScanButton(
+                looks: _looks,
+                label: _label,
+                onCode: (String code) => setState(() => _result = code),
               ),
               const SizedBox(height: 8),
               Row(

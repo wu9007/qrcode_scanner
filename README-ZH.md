@@ -11,7 +11,7 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.1
+  qrscan: ^1.2.2
 ```
 
 ```dart
@@ -29,7 +29,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.2.1
+      ref: v1.2.2
 ```
 
 ### Android
@@ -79,6 +79,20 @@ Uint8List qrPng = await scanner.generateBarCode('https://github.com/wu9007/qrcod
 | `generateBarCode(code)` | 二维码 PNG `Uint8List`（UTF-8） |
 
 API 就这些。没有 Widget、没有裁切识别区、没有前后摄像头切换、没有码流、没有格式过滤。框只是瞄准，解码仍是整帧。
+
+### 抄这段按钮
+
+完整文件在 `example/lib/scan_button.dart`，丢进你的工程就能用：
+
+```dart
+ScanButton(looks: ScanLooks.wechat, label: '扫一扫', onCode: (code) { ... });
+ScanButton(looks: ScanLooks.alipay, label: '扫码', onCode: (code) { ... });
+ScanButton(
+  looks: ScanLooks(color: Color(0xFFFF6A00), hint: '对准条码'),
+  label: '扫描',
+  onCode: (code) { ... },
+);
+```
 
 ### `scan()` 的错误
 
