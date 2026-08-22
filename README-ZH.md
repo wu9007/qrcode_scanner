@@ -100,7 +100,8 @@ Latin-1 二维码（ISO-8859-1、无 ECI）不再被强行当 UTF-8。带高位�
 | --- | --- |
 | 页面内预览 / 扫码窗 / 叠加层 / 连续扫 / Web / 桌面 | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) |
 | 只扫一维 / 只扫 QR / 要格式列表 | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) 的 `formats:` |
-| 工业 PDA 扳机走 Intent 广播 | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
+| 手机或 PDA 的后置摄像头 | 本插件 `scan()` |
+| 工业 PDA **激光头**走 Intent 广播 | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
 | 枪设成键盘槽入（HID） | 任何 `TextField`。不装插件 |
 
 三条路互斥：**相机扫一下**（本插件，含 PDA 摄像头）· **厂商激光广播**（`pda_scanner`）· **键盘槽入**（什么都不用）。混用是现场「插件坏了」的第一原因。
