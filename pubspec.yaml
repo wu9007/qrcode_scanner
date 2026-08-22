@@ -1,9 +1,18 @@
 name: qrscan
-description: Flutter plugin for scanning QR codes and barcodes, and generating QR images. Android (CameraX + ZXing) and iOS (Vision).
-version: 1.1.0
-homepage: https://github.com/wu9007/qrcode_scanner
+description: >-
+  One-shot Flutter QR/barcode scanner: open camera, first decode, string back.
+  Android CameraX+ZXing, iOS Vision. Not a widget.
+version: 1.1.1
+homepage: https://pub.dev/packages/qrscan
 repository: https://github.com/wu9007/qrcode_scanner
 issue_tracker: https://github.com/wu9007/qrcode_scanner/issues
+
+topics:
+  - qr
+  - barcode
+  - qr-code
+  - camera
+  - scanner
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -17,6 +26,10 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   flutter_test:
     sdk: flutter
+
+screenshots:
+  - description: Open camera, first decode, string back.
+    path: pictures/qrscan.gif
 
 flutter:
   plugin:

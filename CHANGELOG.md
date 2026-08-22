@@ -1,4 +1,13 @@
+## 1.1.1 - (2026/08/22)
+
+Listing only. No API change.
+
+- pub.dev `topics` and screenshot
+- One-shot wording in the package description
+- Library dartdoc
+
 ## 1.1.0 - (2026/08/22)
+
 
 iOS is the same product as Android.
 

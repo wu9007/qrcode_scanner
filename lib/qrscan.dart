@@ -1,3 +1,9 @@
+/// One-shot Flutter QR / barcode plugin.
+///
+/// Open the camera, decode the first code, return a [String], close.
+/// Not an embedded preview widget — use `mobile_scanner` for that.
+library qrscan;
+
 import 'dart:async';
 
 import 'package:flutter/services.dart';

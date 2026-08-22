@@ -11,7 +11,7 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.1.0
+  qrscan: ^1.1.1
 ```
 
 ```dart
@@ -27,7 +27,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.1.0
+      ref: v1.1.1
 ```
 
 ### Android
