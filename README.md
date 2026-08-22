@@ -11,18 +11,15 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.0
+  qrscan: ^1.2.1
 ```
 
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? code = await scanner.scan();
-// optional: brand color + one line of hint
-String? also = await scanner.scan(
-  color: Color(0xFF00C853),
-  hint: '对准条码或二维码',
-);
+String? wechat = await scanner.scan(looks: ScanLooks.wechat);
+String? alipay = await scanner.scan(looks: ScanLooks.alipay);
 ```
 
 This is **not** an embedded camera widget. Preview / scan window / overlay / torch API / continuous scan → [`mobile_scanner`](https://pub.dev/packages/mobile_scanner).
@@ -55,6 +52,8 @@ Minimum iOS 12. Landscape only if the host already lists it in `UISupportedInter
 
 ```dart
 String? cameraScanResult = await scanner.scan();
+String? wechat = await scanner.scan(looks: ScanLooks.wechat);
+String? alipay = await scanner.scan(looks: ScanLooks.alipay);
 String? branded = await scanner.scan(color: Color(0xFF00C853), hint: '对准条码或二维码');
 String? photoScanResult = await scanner.scanPhoto();
 String? fromPath = await scanner.scanPath(path);

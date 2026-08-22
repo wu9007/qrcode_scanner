@@ -507,9 +507,9 @@ final class ScanOverlayView: UIView {
     isOpaque = false
     backgroundColor = .clear
     isUserInteractionEnabled = false
-    line.backgroundColor = accent.withAlphaComponent(0.9)
+    line.backgroundColor = accent.withAlphaComponent(0.95)
     addSubview(line)
-    hintLabel.textColor = .white
+    hintLabel.textColor = UIColor(white: 1, alpha: 0.9)
     hintLabel.font = UIFont.systemFont(ofSize: 14)
     hintLabel.textAlignment = .center
     hintLabel.numberOfLines = 2
@@ -518,7 +518,11 @@ final class ScanOverlayView: UIView {
 
   func apply(color: UIColor, hint: String?) {
     accent = color
-    line.backgroundColor = color.withAlphaComponent(0.9)
+    line.backgroundColor = color.withAlphaComponent(0.95)
+    line.layer.shadowColor = color.cgColor
+    line.layer.shadowRadius = 8
+    line.layer.shadowOpacity = 0.85
+    line.layer.shadowOffset = .zero
     hintLabel.text = hint
     setNeedsDisplay()
   }
@@ -548,8 +552,8 @@ final class ScanOverlayView: UIView {
     ctx.fill(CGRect(x: 0, y: hole.minY, width: hole.minX, height: hole.height))
     ctx.fill(CGRect(x: hole.maxX, y: hole.minY, width: bounds.width - hole.maxX, height: hole.height))
     ctx.setStrokeColor(accent.cgColor)
-    ctx.setLineWidth(3)
-    let len: CGFloat = 22
+    ctx.setLineWidth(4)
+    let len: CGFloat = 24
     let t = hole.minY, b = hole.maxY, l = hole.minX, r = hole.maxX
     ctx.move(to: CGPoint(x: l, y: t + len)); ctx.addLine(to: CGPoint(x: l, y: t)); ctx.addLine(to: CGPoint(x: l + len, y: t))
     ctx.move(to: CGPoint(x: r - len, y: t)); ctx.addLine(to: CGPoint(x: r, y: t)); ctx.addLine(to: CGPoint(x: r, y: t + len))

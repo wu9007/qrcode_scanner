@@ -1,4 +1,18 @@
+## 1.2.1 - (2026/08/22)
+
+Same two knobs. Looks like WeChat / Alipay without becoming a widget.
+
+```dart
+await scanner.scan(looks: ScanLooks.wechat);
+await scanner.scan(looks: ScanLooks.alipay);
+```
+
+- `ScanLooks.wechat` `#07C160` + 「将二维码/条码放入框内，即可自动扫描」
+- `ScanLooks.alipay` `#1677FF` + 「对准二维码/条码」
+- Scan line now fades at the ends (Android + iOS)
+
 ## 1.2.0 - (2026/08/22)
+
 
 `scan()` is still one line. Optional overlay only:
 

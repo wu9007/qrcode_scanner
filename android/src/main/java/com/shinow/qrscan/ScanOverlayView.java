@@ -3,8 +3,12 @@ package com.shinow.qrscan;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Shader;
+import android.text.Layout;
+import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
@@ -14,14 +18,18 @@ import androidx.annotation.Nullable;
 
 public class ScanOverlayView extends View {
 
+    private static final int DEFAULT_ACCENT = 0xFF12C4FF;
+
     private final Paint maskPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint cornerPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint hintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final RectF hole = new RectF();
     private ValueAnimator animator;
     private float lineT = 0f;
     private String hint;
+    private int accent = DEFAULT_ACCENT;
 
     public ScanOverlayView(Context context) {
         super(context);
@@ -40,23 +48,31 @@ public class ScanOverlayView extends View {
 
     private void init() {
         maskPaint.setColor(0x99000000);
-        cornerPaint.setColor(0xFF12C4FF);
-        cornerPaint.setStrokeWidth(dp(4));
         cornerPaint.setStyle(Paint.Style.STROKE);
-        linePaint.setColor(0xFF12C4FF);
-        linePaint.setStrokeWidth(dp(2));
-        hintPaint.setColor(0xFFFFFFFF);
-        hintPaint.setTextAlign(Paint.Align.CENTER);
+        cornerPaint.setStrokeCap(Paint.Cap.SQUARE);
+        cornerPaint.setStrokeJoin(Paint.Join.MITER);
+        glowPaint.setStyle(Paint.Style.STROKE);
+        glowPaint.setStrokeCap(Paint.Cap.ROUND);
+        linePaint.setStyle(Paint.Style.STROKE);
+        linePaint.setStrokeCap(Paint.Cap.ROUND);
+        hintPaint.setColor(0xE6FFFFFF);
+        hintPaint.setTextAlign(Paint.Align.LEFT);
         hintPaint.setTextSize(dp(14));
+        applyAccent(DEFAULT_ACCENT);
     }
 
     void setStyle(@Nullable Integer color, @Nullable String hint) {
-        if (color != null) {
-            cornerPaint.setColor(color);
-            linePaint.setColor(color);
-        }
+        applyAccent(color == null ? DEFAULT_ACCENT : color);
         this.hint = (hint == null || hint.trim().isEmpty()) ? null : hint.trim();
         invalidate();
+    }
+
+    private void applyAccent(int color) {
+        accent = color | 0xFF000000;
+        cornerPaint.setColor(accent);
+        cornerPaint.setStrokeWidth(dp(5));
+        glowPaint.setStrokeWidth(dp(10));
+        linePaint.setStrokeWidth(dp(2.5f));
     }
 
     void start() {
@@ -114,7 +130,7 @@ public class ScanOverlayView extends View {
         canvas.drawRect(0, hole.top, hole.left, hole.bottom, maskPaint);
         canvas.drawRect(hole.right, hole.top, w, hole.bottom, maskPaint);
 
-        float len = dp(22);
+        float len = dp(24);
         float t = hole.top;
         float b = hole.bottom;
         float l = hole.left;
@@ -129,12 +145,27 @@ public class ScanOverlayView extends View {
         canvas.drawLine(r, b, r, b - len, cornerPaint);
 
         float y = hole.top + hole.height() * lineT;
-        linePaint.setAlpha(200);
-        canvas.drawLine(hole.left + dp(8), y, hole.right - dp(8), y, linePaint);
+        float x0 = hole.left + dp(10);
+        float x1 = hole.right - dp(10);
+        int rgb = accent & 0x00FFFFFF;
+        glowPaint.setShader(new LinearGradient(x0, y, x1, y,
+                new int[]{0x00000000, (0x66 << 24) | rgb, 0x00000000},
+                new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP));
+        canvas.drawLine(x0, y, x1, y, glowPaint);
+        linePaint.setShader(new LinearGradient(x0, y, x1, y,
+                new int[]{0x00000000, accent, 0x00000000},
+                new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP));
+        canvas.drawLine(x0, y, x1, y, linePaint);
 
         if (hint != null) {
-            float textY = Math.min(h - dp(140), hole.bottom + dp(28));
-            canvas.drawText(hint, w / 2f, textY, hintPaint);
+            int width = Math.max(1, (int) hole.width());
+            StaticLayout layout = new StaticLayout(
+                    hint, hintPaint, width,
+                    Layout.Alignment.ALIGN_CENTER, 1.15f, 0, false);
+            canvas.save();
+            canvas.translate(hole.centerX() - width / 2f, hole.bottom + dp(18));
+            layout.draw(canvas);
+            canvas.restore();
         }
     }
 

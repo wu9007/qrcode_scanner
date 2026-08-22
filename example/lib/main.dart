@@ -35,13 +35,11 @@ class DemoPage extends StatefulWidget {
 class _DemoPageState extends State<DemoPage> {
   String? _result;
   Uint8List? _png;
+  scanner.ScanLooks _looks = scanner.ScanLooks.wechat;
 
   Future<void> _scan() async {
     try {
-      final String? code = await scanner.scan(
-        color: Theme.of(context).colorScheme.primary,
-        hint: '对准条码或二维码',
-      );
+      final String? code = await scanner.scan(looks: _looks);
       if (!mounted) return;
       setState(() => _result = code);
     } on PlatformException catch (e) {
@@ -100,6 +98,25 @@ class _DemoPageState extends State<DemoPage> {
                         ),
                 ),
               ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                children: <Widget>[
+                  _LooksChip(
+                    label: '微信',
+                    color: scanner.ScanLooks.wechat.color,
+                    selected: _looks == scanner.ScanLooks.wechat,
+                    onTap: () => setState(() => _looks = scanner.ScanLooks.wechat),
+                  ),
+                  _LooksChip(
+                    label: '支付宝',
+                    color: scanner.ScanLooks.alipay.color,
+                    selected: _looks == scanner.ScanLooks.alipay,
+                    onTap: () => setState(() => _looks = scanner.ScanLooks.alipay),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               FilledButton(
                 onPressed: _scan,
                 style: FilledButton.styleFrom(
@@ -119,6 +136,32 @@ class _DemoPageState extends State<DemoPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _LooksChip extends StatelessWidget {
+  const _LooksChip({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: color.withValues(alpha: 0.22),
+      checkmarkColor: color,
+      side: BorderSide(color: color),
     );
   }
 }

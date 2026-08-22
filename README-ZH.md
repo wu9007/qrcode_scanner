@@ -11,17 +11,15 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.0
+  qrscan: ^1.2.1
 ```
 
 ```dart
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? code = await scanner.scan();
-String? also = await scanner.scan(
-  color: Color(0xFF00C853),
-  hint: '对准条码或二维码',
-);
+String? wechat = await scanner.scan(looks: ScanLooks.wechat);
+String? alipay = await scanner.scan(looks: ScanLooks.alipay);
 ```
 
 Dart 3 / Flutter 3.10+。钉某个提交：
@@ -31,7 +29,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.2.0
+      ref: v1.2.1
 ```
 
 ### Android
@@ -63,6 +61,8 @@ iOS 横屏只有宿主 App 的 `UISupportedInterfaceOrientations` 里包含横�
 import 'package:qrscan/qrscan.dart' as scanner;
 
 String? cameraScanResult = await scanner.scan();
+String? wechat = await scanner.scan(looks: ScanLooks.wechat);
+String? alipay = await scanner.scan(looks: ScanLooks.alipay);
 String? branded = await scanner.scan(color: Color(0xFF00C853), hint: '对准条码或二维码');
 String? photoScanResult = await scanner.scanPhoto();
 String? fromPath = await scanner.scanPath(path);

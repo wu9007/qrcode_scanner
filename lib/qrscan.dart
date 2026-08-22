@@ -24,22 +24,46 @@ const String NoActivity = 'NO_ACTIVITY';
 
 const MethodChannel _channel = MethodChannel('qr_scan');
 
+/// Packaged [color] + [hint]. Still the same two overlay knobs.
+class ScanLooks {
+  const ScanLooks({required this.color, this.hint});
+
+  final Color color;
+  final String? hint;
+
+  /// WeChat green. 「将二维码/条码放入框内，即可自动扫描」
+  static const ScanLooks wechat = ScanLooks(
+    color: Color(0xFF07C160),
+    hint: '将二维码/条码放入框内，即可自动扫描',
+  );
+
+  /// Alipay blue. 「对准二维码/条码」
+  static const ScanLooks alipay = ScanLooks(
+    color: Color(0xFF1677FF),
+    hint: '对准二维码/条码',
+  );
+}
+
 /// Open the camera scanner and return the decoded string, or `null` if cancelled.
 ///
 /// This does not open the gallery. Use [scanPhoto] for that.
 ///
 /// [color] tints the corner marks and the scan line (default `#12C4FF`).
-/// [hint] is a single line under the viewfinder. Omit both and `scan()` is
+/// [hint] is a line under the viewfinder.
+/// [looks] is just [ScanLooks.wechat] / [ScanLooks.alipay] — same two knobs.
+/// Explicit [color] / [hint] win over [looks]. Omit all three and `scan()` is
 /// the 2019 call.
-Future<String?> scan({Color? color, String? hint}) async {
+Future<String?> scan({Color? color, String? hint, ScanLooks? looks}) async {
+  final Color? tint = color ?? looks?.color;
+  final String? copy = hint ?? looks?.hint;
   final Map<String, Object> args = <String, Object>{};
-  if (color != null) {
+  if (tint != null) {
     // Color.value is ARGB. toARGB32() needs a newer Flutter than 3.10.
     // ignore: deprecated_member_use
-    args['color'] = color.value;
+    args['color'] = tint.value;
   }
-  if (hint != null) {
-    args['hint'] = hint;
+  if (copy != null) {
+    args['hint'] = copy;
   }
   return await _channel.invokeMethod<String>('scan', args);
 }
