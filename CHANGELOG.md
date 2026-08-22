@@ -1,4 +1,10 @@
+## 1.2.3 - (2026/08/22)
+
+`ScanLooks.wechat` now also sets the top title to 「扫一扫」. Alipay is 「扫码」.
+Still `scan(looks: …)`. No new argument on `scan()`.
+
 ## 1.2.2 - (2026/08/22)
+
 
 Drop-in `ScanButton` demo you can copy: `example/lib/scan_button.dart`.
 

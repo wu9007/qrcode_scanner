@@ -2,7 +2,7 @@ name: qrscan
 description: >-
   One-shot Flutter QR/barcode scanner: open camera, first decode, string back.
   Android CameraX+ZXing, iOS Vision. Not a widget.
-version: 1.2.2
+version: 1.2.3
 homepage: https://pub.dev/packages/qrscan
 repository: https://github.com/wu9007/qrcode_scanner
 issue_tracker: https://github.com/wu9007/qrcode_scanner/issues

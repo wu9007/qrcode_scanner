@@ -36,6 +36,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
     private Result pendingResult;
     private Integer pendingColor;
     private String pendingHint;
+    private String pendingTitle;
 
     @Override
     public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
@@ -90,6 +91,7 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
                 pendingResult = result;
                 pendingColor = intArg(call, "color");
                 pendingHint = call.argument("hint");
+                pendingTitle = call.argument("title");
                 launchScanner();
                 break;
             case "scan_photo":
@@ -148,6 +150,9 @@ public class QrscanPlugin implements FlutterPlugin, ActivityAware, MethodCallHan
         }
         if (pendingHint != null) {
             intent.putExtra(SecondActivity.EXTRA_HINT, pendingHint);
+        }
+        if (pendingTitle != null) {
+            intent.putExtra(SecondActivity.EXTRA_TITLE, pendingTitle);
         }
     }
 

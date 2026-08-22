@@ -41,6 +41,7 @@ public class SecondActivity extends AppCompatActivity {
     public static final String EXTRA_ERROR_MESSAGE = "ERROR_MESSAGE";
     public static final String EXTRA_COLOR = "qrscan_color";
     public static final String EXTRA_HINT = "qrscan_hint";
+    public static final String EXTRA_TITLE = "qrscan_title";
     public static boolean isLightOpen = false;
 
     private static final String TAG = "Qrscan";
@@ -70,7 +71,8 @@ public class SecondActivity extends AppCompatActivity {
             Integer color = getIntent().hasExtra(EXTRA_COLOR)
                     ? getIntent().getIntExtra(EXTRA_COLOR, 0xFF12C4FF)
                     : null;
-            overlay.setStyle(color, getIntent().getStringExtra(EXTRA_HINT));
+            overlay.setStyle(color, getIntent().getStringExtra(EXTRA_HINT),
+                    getIntent().getStringExtra(EXTRA_TITLE));
         }
         lightButton = findViewById(R.id.scan_light);
         cameraExecutor = Executors.newSingleThreadExecutor();

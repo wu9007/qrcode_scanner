@@ -11,7 +11,7 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.2
+  qrscan: ^1.2.3
 ```
 
 ```dart

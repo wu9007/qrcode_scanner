@@ -25,10 +25,12 @@ public class ScanOverlayView extends View {
     private final Paint glowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint linePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final TextPaint hintPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private final TextPaint titlePaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final RectF hole = new RectF();
     private ValueAnimator animator;
     private float lineT = 0f;
     private String hint;
+    private String title;
     private int accent = DEFAULT_ACCENT;
 
     public ScanOverlayView(Context context) {
@@ -58,12 +60,17 @@ public class ScanOverlayView extends View {
         hintPaint.setColor(0xE6FFFFFF);
         hintPaint.setTextAlign(Paint.Align.LEFT);
         hintPaint.setTextSize(dp(14));
+        titlePaint.setColor(0xFFFFFFFF);
+        titlePaint.setTextAlign(Paint.Align.CENTER);
+        titlePaint.setTextSize(dp(18));
+        titlePaint.setFakeBoldText(true);
         applyAccent(DEFAULT_ACCENT);
     }
 
-    void setStyle(@Nullable Integer color, @Nullable String hint) {
+    void setStyle(@Nullable Integer color, @Nullable String hint, @Nullable String title) {
         applyAccent(color == null ? DEFAULT_ACCENT : color);
         this.hint = (hint == null || hint.trim().isEmpty()) ? null : hint.trim();
+        this.title = (title == null || title.trim().isEmpty()) ? null : title.trim();
         invalidate();
     }
 
@@ -129,6 +136,10 @@ public class ScanOverlayView extends View {
         canvas.drawRect(0, hole.bottom, w, h, maskPaint);
         canvas.drawRect(0, hole.top, hole.left, hole.bottom, maskPaint);
         canvas.drawRect(hole.right, hole.top, w, hole.bottom, maskPaint);
+
+        if (title != null) {
+            canvas.drawText(title, w / 2f, Math.max(dp(36), hole.top - dp(20)), titlePaint);
+        }
 
         float len = dp(24);
         float t = hole.top;

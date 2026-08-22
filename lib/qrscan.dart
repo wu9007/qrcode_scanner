@@ -26,21 +26,24 @@ const MethodChannel _channel = MethodChannel('qr_scan');
 
 /// Packaged [color] + [hint]. Still the same two overlay knobs.
 class ScanLooks {
-  const ScanLooks({required this.color, this.hint});
+  const ScanLooks({required this.color, this.hint, this.title});
 
   final Color color;
   final String? hint;
+  final String? title;
 
-  /// WeChat green. 「将二维码/条码放入框内，即可自动扫描」
+  /// WeChat green. 「扫一扫」
   static const ScanLooks wechat = ScanLooks(
     color: Color(0xFF07C160),
     hint: '将二维码/条码放入框内，即可自动扫描',
+    title: '扫一扫',
   );
 
-  /// Alipay blue. 「对准二维码/条码」
+  /// Alipay blue. 「扫码」
   static const ScanLooks alipay = ScanLooks(
     color: Color(0xFF1677FF),
     hint: '对准二维码/条码',
+    title: '扫码',
   );
 }
 
@@ -64,6 +67,9 @@ Future<String?> scan({Color? color, String? hint, ScanLooks? looks}) async {
   }
   if (copy != null) {
     args['hint'] = copy;
+  }
+  if (looks?.title != null) {
+    args['title'] = looks!.title!;
   }
   return await _channel.invokeMethod<String>('scan', args);
 }
