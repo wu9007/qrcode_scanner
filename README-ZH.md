@@ -11,7 +11,7 @@
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.3
+  qrscan: ^1.2.4
 ```
 
 ```dart
@@ -29,7 +29,7 @@ dependencies:
   qrscan:
     git:
       url: https://github.com/wu9007/qrcode_scanner.git
-      ref: v1.2.3
+      ref: v1.2.4
 ```
 
 ### Android
@@ -93,6 +93,8 @@ ScanButton(
   onCode: (code) { ... },
 );
 ```
+
+扫完把字符串丢进 `example/lib/scan_handle.dart` 的 `handleScan(code)`，拆 URL / Wi-Fi / 发血单 / 袋号 / EAN。插件不参与后处理。
 
 ### `scan()` 的错误
 

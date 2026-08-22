@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:qrscan/qrscan.dart' as scanner;
 
 import 'scan_button.dart';
+import 'scan_handle.dart';
 
 void main() {
   runApp(const DemoApp());
@@ -35,22 +36,29 @@ class DemoPage extends StatefulWidget {
 }
 
 class _DemoPageState extends State<DemoPage> {
-  String? _result;
+  ScanHandled? _hit;
   Uint8List? _png;
   scanner.ScanLooks _looks = scanner.ScanLooks.wechat;
 
   String get _label =>
       _looks == scanner.ScanLooks.alipay ? '扫码' : '扫一扫';
 
+  void _apply(String code) {
+    setState(() {
+      _png = null;
+      _hit = handleScan(code);
+    });
+  }
+
   Future<void> _photo() async {
     final String? code = await scanner.scanPhoto();
     if (!mounted || code == null) return;
-    setState(() => _result = code);
+    _apply(code);
   }
 
   Future<void> _make() async {
     final Uint8List png = await scanner.generateBarCode(
-      _result ?? 'https://github.com/wu9007/qrcode_scanner',
+      _hit?.raw ?? 'https://github.com/wu9007/qrcode_scanner',
     );
     if (!mounted) return;
     setState(() => _png = png);
@@ -76,21 +84,20 @@ class _DemoPageState extends State<DemoPage> {
               ),
               const SizedBox(height: 28),
               Expanded(
-                child: Center(
-                  child: _png != null
-                      ? Image.memory(_png!, width: 180, height: 180)
-                      : Text(
-                          _result ?? _looks.hint ?? '点扫描',
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: _result == null
-                                    ? cs.onSurface.withValues(alpha: 0.45)
-                                    : cs.onSurface,
-                                height: 1.4,
-                              ),
-                        ),
-                ),
+                child: _png != null
+                    ? Center(child: Image.memory(_png!, width: 180, height: 180))
+                    : _hit == null
+                        ? Center(
+                            child: Text(
+                              _looks.hint ?? '点扫描',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    color: cs.onSurface.withValues(alpha: 0.45),
+                                  ),
+                            ),
+                          )
+                        : _HitView(hit: _hit!),
               ),
               Wrap(
                 spacing: 8,
@@ -117,7 +124,7 @@ class _DemoPageState extends State<DemoPage> {
               ScanButton(
                 looks: _looks,
                 label: _label,
-                onCode: (String code) => setState(() => _result = code),
+                onCode: _apply,
               ),
               const SizedBox(height: 8),
               Row(
@@ -131,6 +138,37 @@ class _DemoPageState extends State<DemoPage> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _HitView extends StatelessWidget {
+  const _HitView({required this.hit});
+  final ScanHandled hit;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: <Widget>[
+        Text(hit.label, style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        Text(hit.raw, style: Theme.of(context).textTheme.titleMedium),
+        const SizedBox(height: 16),
+        for (final ScanField f in hit.fields)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  width: 64,
+                  child: Text(f.k, style: Theme.of(context).textTheme.bodySmall),
+                ),
+                Expanded(child: Text(f.v, style: Theme.of(context).textTheme.bodyMedium)),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

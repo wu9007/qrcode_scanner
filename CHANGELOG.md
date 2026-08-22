@@ -1,4 +1,10 @@
+## 1.2.4 - (2026/08/22)
+
+After `scan()`: copy `example/lib/scan_handle.dart`. Splits URL / Wi-Fi / 发血单 / 袋号 / EAN.
+`scan()` still returns a String. The plugin does not parse.
+
 ## 1.2.3 - (2026/08/22)
+
 
 `ScanLooks.wechat` now also sets the top title to 「扫一扫」. Alipay is 「扫码」.
 Still `scan(looks: …)`. No new argument on `scan()`.

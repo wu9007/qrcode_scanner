@@ -11,7 +11,7 @@ Open camera. First decode. String back. Close.
 
 ```yaml
 dependencies:
-  qrscan: ^1.2.3
+  qrscan: ^1.2.4
 ```
 
 ```dart
@@ -121,6 +121,17 @@ class ScanButton extends StatelessWidget {
 // WeChat:  ScanButton(looks: ScanLooks.wechat, label: '扫一扫', onCode: ...)
 // Alipay:  ScanButton(looks: ScanLooks.alipay, label: '扫码', onCode: ...)
 // Own:     ScanButton(looks: ScanLooks(color: Color(0xFFFF6A00), hint: '对准条码'), ...)
+```
+
+### After `scan()`
+
+`scan()` still returns a `String`. Copy `example/lib/scan_handle.dart` to split URL / Wi-Fi / 发血单 / 袋号 / EAN:
+
+```dart
+final hit = handleScan(code);
+// hit.kind  url | wifi | slip | din | ean | …
+// hit.fields  单号 / 血型 / SSID …
+// hit.actions 复制袋号 / 复制原文
 ```
 
 ### Errors from `scan()`
