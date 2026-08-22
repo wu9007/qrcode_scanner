@@ -91,10 +91,11 @@ Decoder order is covered by `tool/decoder-harness` (63 fixtures in CI). Album ph
 | --- | --- |
 | Embedded preview / scan window / overlay / continuous scan / web / desktop | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) |
 | Only 1D / only QR / a format list | [`mobile_scanner`](https://pub.dev/packages/mobile_scanner) `formats:` |
-| Industrial PDA trigger that broadcasts an Intent | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
+| Camera on a **phone or a PDA** (rear camera) | this plugin — `scan()` |
+| Industrial PDA **laser** that broadcasts an Intent | [`pda_scanner`](https://github.com/wu9007/pda_scanner) |
 | Gun set to keyboard (HID) wedge | Any `TextField`. No plugin. |
 
-Three mutually exclusive paths: **camera one-shot** (this plugin) · **OEM broadcast** (`pda_scanner`) · **HID keyboard** (nothing). Mixing them is how field apps “break”.
+Three mutually exclusive paths: **camera one-shot** (this plugin, including PDA cameras) · **OEM laser broadcast** (`pda_scanner`) · **HID keyboard** (nothing). Mixing them is how field apps “break”.
 
 ## 0.3 → 0.4
 
